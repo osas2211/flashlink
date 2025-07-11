@@ -1,20 +1,26 @@
-"use client"
+'use client'
 
-import type React from "react"
+import type React from 'react'
 
-import { useState } from "react"
-import { motion } from "framer-motion"
-import { Moon, Sun, Globe, Shield, Sliders, Bell, Zap } from "lucide-react"
-import { Card } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Switch } from "@/components/ui/switch"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { useToast } from "@/hooks/use-toast"
-import { TrendingUp } from "lucide-react"
+import { useState } from 'react'
+import { motion } from 'framer-motion'
+import { Moon, Sun, Globe, Shield, Sliders, Bell, Zap } from 'lucide-react'
+import { Card } from '@/components/ui/Card'
+import { Button } from '@/components/ui/Button'
+import { Switch } from '@/components/ui/switch'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { useToast } from '@/hooks/use-toast'
+import { TrendingUp } from 'lucide-react'
 
 export default function Settings() {
   const [darkMode, setDarkMode] = useState(true)
-  const [selectedNetwork, setSelectedNetwork] = useState("ethereum")
+  const [selectedNetwork, setSelectedNetwork] = useState('ethereum')
   const [mevProtection, setMevProtection] = useState(true)
   const [autoSlippage, setAutoSlippage] = useState(true)
   const [expertMode, setExpertMode] = useState(false)
@@ -23,23 +29,23 @@ export default function Settings() {
   const { toast } = useToast()
 
   const networks = [
-    { value: "ethereum", label: "Ethereum Mainnet", icon: "⟠" },
-    { value: "polygon", label: "Polygon", icon: "🔷" },
-    { value: "arbitrum", label: "Arbitrum One", icon: "🔵" },
-    { value: "optimism", label: "Optimism", icon: "🔴" },
-    { value: "bsc", label: "BNB Smart Chain", icon: "🟡" },
+    { value: 'ethereum', label: 'Ethereum Mainnet', icon: '⟠' },
+    { value: 'polygon', label: 'Polygon', icon: '🔷' },
+    { value: 'arbitrum', label: 'Arbitrum One', icon: '🔵' },
+    { value: 'optimism', label: 'Optimism', icon: '🔴' },
+    { value: 'bsc', label: 'BNB Smart Chain', icon: '🟡' },
   ]
 
   const handleSaveSettings = () => {
     toast({
-      title: "Settings Saved",
-      description: "Your preferences have been updated successfully",
+      title: 'Settings Saved',
+      description: 'Your preferences have been updated successfully',
     })
   }
 
   const handleResetSettings = () => {
     setDarkMode(true)
-    setSelectedNetwork("ethereum")
+    setSelectedNetwork('ethereum')
     setMevProtection(true)
     setAutoSlippage(true)
     setExpertMode(false)
@@ -47,8 +53,8 @@ export default function Settings() {
     setSoundEffects(false)
 
     toast({
-      title: "Settings Reset",
-      description: "All settings have been reset to defaults",
+      title: 'Settings Reset',
+      description: 'All settings have been reset to defaults',
     })
   }
 
@@ -80,7 +86,11 @@ export default function Settings() {
   return (
     <div className="container py-12">
       <div className="max-w-2xl mx-auto">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+        >
           <div className="mb-8">
             <h1 className="text-3xl font-bold mb-2">Settings</h1>
             <p className="text-foreground-secondary">Customize your FlashLink experience</p>
@@ -115,7 +125,11 @@ export default function Settings() {
               <Switch checked={notifications} onCheckedChange={setNotifications} />
             </SettingItem>
 
-            <SettingItem icon={Zap} title="Sound Effects" description="Play sounds for interactions and notifications">
+            <SettingItem
+              icon={Zap}
+              title="Sound Effects"
+              description="Play sounds for interactions and notifications"
+            >
               <Switch checked={soundEffects} onCheckedChange={setSoundEffects} />
             </SettingItem>
           </Card>
@@ -131,18 +145,22 @@ export default function Settings() {
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-foreground-secondary mb-2">Default Network</label>
+                <label className="block text-sm font-medium text-foreground-secondary mb-2">
+                  Default Network
+                </label>
                 <Select value={selectedNetwork} onValueChange={setSelectedNetwork}>
                   <SelectTrigger>
                     <SelectValue>
                       <div className="flex items-center gap-2">
-                        <span className="text-lg">{networks.find((n) => n.value === selectedNetwork)?.icon}</span>
-                        <span>{networks.find((n) => n.value === selectedNetwork)?.label}</span>
+                        <span className="text-lg">
+                          {networks.find(n => n.value === selectedNetwork)?.icon}
+                        </span>
+                        <span>{networks.find(n => n.value === selectedNetwork)?.label}</span>
                       </div>
                     </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
-                    {networks.map((network) => (
+                    {networks.map(network => (
                       <SelectItem key={network.value} value={network.value}>
                         <div className="flex items-center gap-2">
                           <span className="text-lg">{network.icon}</span>
@@ -205,12 +223,12 @@ export default function Settings() {
               {expertMode && (
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
+                  animate={{ opacity: 1, height: 'auto' }}
                   className="p-4 bg-neon-pink/10 border border-neon-pink/30 rounded-2xl"
                 >
                   <p className="text-sm text-neon-pink">
-                    ⚠️ Expert mode enables advanced features that may result in unexpected behavior. Use with caution and
-                    ensure you understand the risks.
+                    ⚠️ Expert mode enables advanced features that may result in unexpected behavior.
+                    Use with caution and ensure you understand the risks.
                   </p>
                 </motion.div>
               )}

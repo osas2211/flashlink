@@ -1,13 +1,13 @@
-"use client"
+'use client'
 
-import type { ReactNode } from "react"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { motion } from "framer-motion"
-import { Zap, Menu, X } from "lucide-react"
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { WalletConnectModal, ConnectedWallet } from "./WalletConnectModal"
+import type { ReactNode } from 'react'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { motion } from 'framer-motion'
+import { Zap, Menu, X } from 'lucide-react'
+import { useState } from 'react'
+import { Button } from '@/components/ui/Button'
+import { WalletConnectModal, ConnectedWallet } from './WalletConnectModal'
 
 interface LayoutProps {
   children: ReactNode
@@ -20,10 +20,10 @@ export default function Layout({ children }: LayoutProps) {
   const [connectedWallet, setConnectedWallet] = useState<string | null>(null)
 
   const navigation = [
-    { name: "Home", href: "/" },
-    { name: "Swap", href: "/swap" },
-    { name: "Dashboard", href: "/dashboard" },
-    { name: "Settings", href: "/settings" },
+    { name: 'Home', href: '/' },
+    { name: 'Swap', href: '/swap' },
+    { name: 'Dashboard', href: '/dashboard' },
+    { name: 'Settings', href: '/settings' },
   ]
 
   const handleWalletConnect = (walletName: string) => {
@@ -50,14 +50,14 @@ export default function Layout({ children }: LayoutProps) {
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-8">
-              {navigation.map((item) => (
+              {navigation.map(item => (
                 <Link
                   key={item.name}
                   href={item.href}
                   className={`px-4 py-2 rounded-2xl transition-all duration-300 ${
                     pathname === item.href
-                      ? "bg-neon-cyan/20 text-neon-cyan border border-neon-cyan/30"
-                      : "text-foreground-secondary hover:text-foreground hover:bg-background-tertiary"
+                      ? 'bg-neon-cyan/20 text-neon-cyan border border-neon-cyan/30'
+                      : 'text-foreground-secondary hover:text-foreground hover:bg-background-tertiary'
                   }`}
                 >
                   {item.name}
@@ -68,7 +68,10 @@ export default function Layout({ children }: LayoutProps) {
             {/* Wallet Connection */}
             <div className="hidden md:block">
               {connectedWallet ? (
-                <ConnectedWallet walletName={connectedWallet} onDisconnect={handleWalletDisconnect} />
+                <ConnectedWallet
+                  walletName={connectedWallet}
+                  onDisconnect={handleWalletDisconnect}
+                />
               ) : (
                 <Button onClick={() => setWalletModalOpen(true)}>Connect Wallet</Button>
               )}
@@ -87,19 +90,19 @@ export default function Layout({ children }: LayoutProps) {
           {mobileMenuOpen && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
+              animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
               className="md:hidden mt-4 pt-4 border-t border-border"
             >
               <div className="flex flex-col space-y-2">
-                {navigation.map((item) => (
+                {navigation.map(item => (
                   <Link
                     key={item.name}
                     href={item.href}
                     className={`px-4 py-3 rounded-2xl transition-all duration-300 ${
                       pathname === item.href
-                        ? "bg-neon-cyan/20 text-neon-cyan border border-neon-cyan/30"
-                        : "text-foreground-secondary hover:text-foreground hover:bg-background-tertiary"
+                        ? 'bg-neon-cyan/20 text-neon-cyan border border-neon-cyan/30'
+                        : 'text-foreground-secondary hover:text-foreground hover:bg-background-tertiary'
                     }`}
                     onClick={() => setMobileMenuOpen(false)}
                   >
@@ -108,7 +111,10 @@ export default function Layout({ children }: LayoutProps) {
                 ))}
                 <div className="pt-2">
                   {connectedWallet ? (
-                    <ConnectedWallet walletName={connectedWallet} onDisconnect={handleWalletDisconnect} />
+                    <ConnectedWallet
+                      walletName={connectedWallet}
+                      onDisconnect={handleWalletDisconnect}
+                    />
                   ) : (
                     <Button className="w-full" onClick={() => setWalletModalOpen(true)}>
                       Connect Wallet
@@ -130,7 +136,9 @@ export default function Layout({ children }: LayoutProps) {
           <div className="flex flex-col md:flex-row items-center justify-between">
             <div className="flex items-center space-x-2 mb-4 md:mb-0">
               <Zap className="h-5 w-5 text-neon-cyan" />
-              <span className="text-sm text-foreground-secondary">© 2024 FlashLink. MEV-Resistant DeFi Router.</span>
+              <span className="text-sm text-foreground-secondary">
+                © 2024 FlashLink. MEV-Resistant DeFi Router.
+              </span>
             </div>
             <div className="flex items-center space-x-6 text-sm text-foreground-secondary">
               <Link href="#" className="hover:text-neon-cyan transition-colors">

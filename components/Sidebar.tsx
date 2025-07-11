@@ -1,7 +1,7 @@
-"use client"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { motion } from "framer-motion"
+'use client'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { motion } from 'framer-motion'
 import {
   Home,
   ArrowLeftRight,
@@ -12,21 +12,21 @@ import {
   Zap,
   ChevronLeft,
   ChevronRight,
-} from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
+} from 'lucide-react'
+import { Button } from '@/components/ui/Button'
+import { cn } from '@/lib/utils'
 
 const navigation = [
-  { name: "Home", href: "/", icon: Home },
-  { name: "Swap", href: "/swap", icon: ArrowLeftRight },
-  { name: "Dashboard", href: "/dashboard", icon: BarChart3 },
-  { name: "Portfolio", href: "/portfolio", icon: TrendingUp },
-  { name: "Settings", href: "/settings", icon: Settings },
+  { name: 'Home', href: '/', icon: Home },
+  { name: 'Swap', href: '/swap', icon: ArrowLeftRight },
+  { name: 'Dashboard', href: '/dashboard', icon: BarChart3 },
+  { name: 'Portfolio', href: '/portfolio', icon: TrendingUp },
+  { name: 'Settings', href: '/settings', icon: Settings },
 ]
 
 const features = [
-  { name: "MEV Protection", icon: Shield, status: "Active" },
-  { name: "Auto Slippage", icon: Zap, status: "Enabled" },
+  { name: 'MEV Protection', icon: Shield, status: 'Active' },
+  { name: 'Auto Slippage', icon: Zap, status: 'Enabled' },
 ]
 
 interface SidebarProps {
@@ -67,7 +67,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
       {/* Navigation */}
       <nav className="flex-1 p-4">
         <div className="space-y-2">
-          {navigation.map((item) => {
+          {navigation.map(item => {
             const isActive = pathname === item.href
             return (
               <Link key={item.name} href={item.href}>
@@ -75,10 +75,10 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   className={cn(
-                    "flex items-center space-x-3 px-3 py-3 rounded-2xl transition-all duration-300 group",
+                    'flex items-center space-x-3 px-3 py-3 rounded-2xl transition-all duration-300 group',
                     isActive
-                      ? "bg-neon-cyan/20 text-neon-cyan border border-neon-cyan/30"
-                      : "text-foreground-secondary hover:text-foreground hover:bg-background-tertiary",
+                      ? 'bg-neon-cyan/20 text-neon-cyan border border-neon-cyan/30'
+                      : 'text-foreground-secondary hover:text-foreground hover:bg-background-tertiary'
                   )}
                 >
                   <item.icon className="h-5 w-5 flex-shrink-0" />
@@ -92,9 +92,11 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
         {/* Features Status */}
         {!collapsed && (
           <div className="mt-8">
-            <h3 className="text-xs font-semibold text-foreground-secondary uppercase tracking-wider mb-3">Features</h3>
+            <h3 className="text-xs font-semibold text-foreground-secondary uppercase tracking-wider mb-3">
+              Features
+            </h3>
             <div className="space-y-2">
-              {features.map((feature) => (
+              {features.map(feature => (
                 <div
                   key={feature.name}
                   className="flex items-center justify-between p-3 bg-background-tertiary rounded-2xl"

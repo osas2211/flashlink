@@ -1,16 +1,16 @@
-"use client"
+'use client'
 
-import { Bell, Search, User } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { WalletConnectModal, ConnectedWallet } from "./WalletConnectModal"
-import { useState } from "react"
+import { Bell, Search, User } from 'lucide-react'
+import { Button } from '@/components/ui/Button'
+import { WalletConnectModal, ConnectedWallet } from './WalletConnectModal'
+import { useState } from 'react'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from '@/components/ui/dropdown-menu'
 
 interface HeaderProps {
   sidebarCollapsed: boolean
