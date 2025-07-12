@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Zap, Menu, X } from 'lucide-react'
 import { useState } from 'react'
-import { Button } from '@/components/ui/Button'
+import { Button } from '@/components/ui/Button' 
 import { WalletConnectModal, ConnectedWallet } from './WalletConnectModal'
 
 interface LayoutProps {
@@ -45,7 +45,7 @@ export default function Layout({ children }: LayoutProps) {
               <div className="p-2 bg-gradient-neon rounded-2xl group-hover:shadow-neon transition-all duration-300">
                 <Zap className="h-6 w-6 text-neon-cyan" />
               </div>
-              <span className="text-xl font-bold neon-text">FlashLink</span>
+              <span className="text-xl font-bold neon-text">FlashLink </span>
             </Link>
 
             {/* Desktop Navigation */}
