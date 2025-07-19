@@ -11,6 +11,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { ConnectButton } from 'thirdweb/react'
+import { client, wallets } from '@/lib/thirdweb_utils'
 
 interface HeaderProps {
   sidebarCollapsed: boolean
@@ -54,11 +56,16 @@ export default function Header({ sidebarCollapsed }: HeaderProps) {
         </Button>
 
         {/* Wallet */}
-        {connectedWallet ? (
+        {/* {connectedWallet ? (
           <ConnectedWallet walletName={connectedWallet} onDisconnect={handleWalletDisconnect} />
         ) : (
           <Button onClick={() => setWalletModalOpen(true)}>Connect Wallet</Button>
-        )}
+        )} */}
+        <ConnectButton
+          client={client}
+          wallets={wallets}
+          signInButton={{ className: '!h-[45px]' }}
+        />
 
         {/* User Menu */}
         <DropdownMenu>
