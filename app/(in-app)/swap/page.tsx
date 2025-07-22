@@ -22,6 +22,11 @@ import {
 } from '@/components/ui/dialog'
 import { useToast } from '@/hooks/use-toast'
 import TradingChart from '../../../components/TradingChart'
+import { tokenAddresses, tokenOptionsTestnet } from '@/constants/token_addresses'
+import { TokenIcon, TokenName, TokenProvider, TokenSymbol } from 'thirdweb/react'
+import { client } from '@/lib/thirdweb_utils'
+import { env_vars } from '@/lib/env_vars'
+import { findBestPath } from '@/lib/find_best_path'
 
 export default function Swap() {
   const [fromToken, setFromToken] = useState('ETH')
@@ -34,56 +39,13 @@ export default function Swap() {
   const [slippage, setSlippage] = useState('0.5')
   const { toast } = useToast()
 
-  const tokens = [
-    {
-      value: 'ETH',
-      label: 'Ethereum',
-      symbol: 'ETH',
-      icon: '⟠',
-      balance: '2.5',
-      price: '$1,700',
-      color: '#627EEA',
-    },
-    {
-      value: 'USDC',
-      label: 'USD Coin',
-      symbol: 'USDC',
-      icon: '💵',
-      balance: '1,250.00',
-      price: '$1.00',
-      color: '#2775CA',
-    },
-    {
-      value: 'USDT',
-      label: 'Tether',
-      symbol: 'USDT',
-      icon: '₮',
-      balance: '500.00',
-      price: '$1.00',
-      color: '#26A17B',
-    },
-    {
-      value: 'WBTC',
-      label: 'Wrapped Bitcoin',
-      symbol: 'WBTC',
-      icon: '₿',
-      balance: '0.15',
-      price: '$43,000',
-      color: '#F7931A',
-    },
-    {
-      value: 'UNI',
-      label: 'Uniswap',
-      symbol: 'UNI',
-      icon: '🦄',
-      balance: '125.5',
-      price: '$5.70',
-      color: '#FF007A',
-    },
-  ]
-
   const getTokenData = (tokenValue: string) =>
-    tokens.find(token => token.value === tokenValue) || tokens[0]
+    tokenOptionsTestnet.find(token => token.address === tokenValue) || tokenOptionsTestnet[0]
+  const paths = [
+    [tokenAddresses.USDC, tokenAddresses.DAI, tokenAddresses.WBTC],
+    [tokenAddresses.USDC, tokenAddresses.DAI],
+    [tokenAddresses.USDC, tokenAddresses.WBTC],
+  ]
 
   const handleSwapTokens = () => {
     const tempToken = fromToken
@@ -107,8 +69,15 @@ export default function Swap() {
     setIsEstimating(true)
 
     // Simulate route estimation
-    await new Promise(resolve => setTimeout(resolve, 1500))
-
+    // await new Promise(resolve => setTimeout(resolve, 1500))
+    const bestPath = await findBestPath(BigInt(1), paths)
+    const route = bestPath.bestPath.map(address => {
+      return {
+        _symbol: tokenOptionsTestnet.find(data => data.address === address)?.symbol,
+        address,
+      }
+    })
+    console.log(route)
     const rate = fromToken === 'ETH' ? 1700 : fromToken === 'WBTC' ? 43000 : 1
     const estimated = (Number.parseFloat(fromAmount) * rate * 0.997).toFixed(2)
     setToAmount(estimated)
@@ -229,21 +198,15 @@ export default function Swap() {
                       <SelectTrigger className="w-36 border-0 bg-background-secondary hover:bg-background">
                         <SelectValue>
                           <div className="flex items-center gap-2">
-                            <div
-                              className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold"
-                              style={{
-                                backgroundColor: fromTokenData.color + '20',
-                                color: fromTokenData.color,
-                              }}
-                            >
+                            {/* <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">
                               {fromTokenData.icon}
-                            </div>
+                            </div> */}
                             <span className="font-medium">{fromTokenData.symbol}</span>
                           </div>
                         </SelectValue>
                       </SelectTrigger>
                       <SelectContent>
-                        {tokens.map(token => (
+                        {/* {tokens.map(token => (
                           <SelectItem key={token.value} value={token.value}>
                             <div className="flex items-center gap-3">
                               <div
@@ -258,21 +221,36 @@ export default function Swap() {
                               </div>
                             </div>
                           </SelectItem>
+                        ))} */}
+
+                        {tokenOptionsTestnet.map((token, index) => (
+                          <SelectItem key={token.address} value={token.address}>
+                            <TokenProvider
+                              address={token.address}
+                              chain={{ rpc: env_vars.RPC_URL, id: 11155111 }}
+                              client={client}
+                            >
+                              {/* <TokenIcon height={50} width={50} iconResolver={token.icon} /> */}
+                              {/* <img src={token.icon} alt="" /> */}
+                              <TokenIcon />
+                              <TokenSymbol />
+                            </TokenProvider>
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-foreground-secondary">
-                      Balance: {fromTokenData.balance} {fromTokenData.symbol}
+                      Balance: 0 {fromTokenData.symbol}
                     </span>
                     <div className="flex items-center gap-2">
-                      <span className="text-foreground-secondary">{fromTokenData.price}</span>
+                      <span className="text-foreground-secondary">{0}</span>
                       <Button
                         variant="ghost"
                         size="sm"
                         className="h-6 px-2 text-xs text-neon-cyan hover:text-neon-cyan/80"
-                        onClick={() => setFromAmount(fromTokenData.balance)}
+                        onClick={() => setFromAmount('')}
                       >
                         MAX
                       </Button>
@@ -312,21 +290,15 @@ export default function Swap() {
                       <SelectTrigger className="w-36 border-0 bg-background-secondary hover:bg-background">
                         <SelectValue>
                           <div className="flex items-center gap-2">
-                            <div
-                              className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold"
-                              style={{
-                                backgroundColor: toTokenData.color + '20',
-                                color: toTokenData.color,
-                              }}
-                            >
+                            {/* <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">
                               {toTokenData.icon}
-                            </div>
+                            </div> */}
                             <span className="font-medium">{toTokenData.symbol}</span>
                           </div>
                         </SelectValue>
                       </SelectTrigger>
                       <SelectContent>
-                        {tokens.map(token => (
+                        {/* {tokens.map(token => (
                           <SelectItem key={token.value} value={token.value}>
                             <div className="flex items-center gap-3">
                               <div
@@ -341,15 +313,29 @@ export default function Swap() {
                               </div>
                             </div>
                           </SelectItem>
+                        ))} */}
+                        {tokenOptionsTestnet.map((token, index) => (
+                          <SelectItem key={token.address} value={token.address}>
+                            <TokenProvider
+                              address={token.address}
+                              chain={{ rpc: env_vars.RPC_URL, id: 11155111 }}
+                              client={client}
+                            >
+                              {/* <TokenIcon height={50} width={50} iconResolver={token.icon} /> */}
+                              {/* <img src={token.icon} alt="" /> */}
+                              <TokenIcon />
+                              <TokenSymbol />
+                            </TokenProvider>
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-foreground-secondary">
-                      Balance: {toTokenData.balance} {toTokenData.symbol}
+                      Balance: {0} {toTokenData.symbol}
                     </span>
-                    <span className="text-foreground-secondary">{toTokenData.price}</span>
+                    <span className="text-foreground-secondary">{0}</span>
                   </div>
                 </div>
               </div>

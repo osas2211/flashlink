@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { ConnectButton } from 'thirdweb/react'
 import { client, wallets } from '@/lib/thirdweb_utils'
+import { env_vars } from '@/lib/env_vars'
 
 interface HeaderProps {
   sidebarCollapsed: boolean
@@ -64,6 +65,7 @@ export default function Header({ sidebarCollapsed }: HeaderProps) {
         <ConnectButton
           client={client}
           wallets={wallets}
+          chains={[{ rpc: env_vars.RPC_URL, id: 11155111 }]}
           signInButton={{ className: '!h-[45px]' }}
         />
 

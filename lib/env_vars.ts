@@ -3,4 +3,6 @@ export const env_vars = {
     process.env.THIRD_WEB_CLIENT_ID || process.env.NEXT_PUBLIC_THIRD_WEB_CLIENT_ID!,
   THIRD_WEB_SECRET_KEY:
     process.env.THIRD_WEB_SECRET_KEY || process.env.NEXT_PUBLIC_THIRD_WEB_SECRET_KEY!,
+  ROUTER_ADDRESS: process.env.ROUTER_ADDRESS || process.env.NEXT_PUBLIC_ROUTER_ADDRESS!,
+  RPC_URL: process.env.RPC_URL || process.env.NEXT_PUBLIC_RPC_URL!,
 }
