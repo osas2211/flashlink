@@ -3,17 +3,18 @@ pragma solidity ^0.8.17;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "./SwapRouter.sol";
+import "./utils/structs.sol";
 
 contract SwapBatcher {
   using SafeERC20 for ERC20;
-  struct Order {
-    address user;
-    address to;
-    uint amountIn;
-    uint amountMinOut;
-    address[] path;
-    uint deadline;
-  }
+  // struct Order {
+  //   address user;
+  //   address to;
+  //   uint amountIn;
+  //   uint amountMinOut;
+  //   address[] path;
+  //   uint deadline;
+  // }
 
   SwapRouter public immutable router;
   address public owner;
