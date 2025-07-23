@@ -23,10 +23,6 @@ contract SwapRouter {
 
   event SwapExecuted(address user, uint amountIn, uint amountOut, address[] path);
 
-  modifier onlyOwner(){
-    require(msg.sender == owner, "Not Owner");
-    _;
-  }
 
   constructor(address _ammRouter){
     ammRouter = IAMMRouter(_ammRouter);
