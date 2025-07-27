@@ -23,14 +23,110 @@ import {
 import { useToast } from '@/hooks/use-toast'
 import TradingChart from '../../../components/TradingChart'
 import { tokenAddresses, tokenOptionsTestnet } from '@/constants/token_addresses'
-import { TokenIcon, TokenName, TokenProvider, TokenSymbol } from 'thirdweb/react'
+import {
+  TokenIcon,
+  TokenProvider,
+  TokenSymbol,
+  useSendTransaction,
+  useSendCalls,
+} from 'thirdweb/react'
 import { client } from '@/lib/thirdweb_utils'
 import { env_vars } from '@/lib/env_vars'
 import { findBestPath } from '@/lib/find_best_path'
+import { useWalletBalance, useActiveWallet } from 'thirdweb/react'
+import { ethers } from 'ethers'
+import { etherlinkTestnet } from 'thirdweb/chains'
+import SwapRouterAbi from '../../../artifacts/contracts/SwapRouter.sol/SwapRouter.json'
+import SwapBatcherAbi from '../../../artifacts/contracts/SwapBatcher.sol/SwapBatcher.json'
+import { getContract, prepareContractCall, waitForReceipt } from 'thirdweb'
+import { allowance, approve } from 'thirdweb/extensions/erc20'
+
+const getTokenData = (tokenValue: string) =>
+  tokenOptionsTestnet.find(token => token.address === tokenValue) || tokenOptionsTestnet[0]
+
+const swapRouterContract = getContract({
+  address: env_vars.SWAP_ROUTER_ADDRESS,
+  chain: { ...etherlinkTestnet, rpc: env_vars.RPC_URL },
+  client,
+})
 
 export default function Swap() {
-  const [fromToken, setFromToken] = useState('ETH')
-  const [toToken, setToToken] = useState('USDC')
+  const { mutateAsync: sendTx, data: transactionResult, isPending } = useSendTransaction()
+  const { mutateAsync: sendCalls, data: id, isPending: isSendingCall } = useSendCalls()
+
+  const onClick = async () => {
+    const amountIn = BigInt(fromAmount)
+    const account = await wallet?.getAccount()
+    const wrapperAddr = env_vars.SWAP_ROUTER_ADDRESS
+    const allowed: bigint = await allowance({
+      contract: tokenContract,
+      owner: account?.address!,
+      spender: env_vars.SWAP_ROUTER_ADDRESS,
+    })
+    console.log('🔍 allowance for wrapper:', allowed.toString())
+    console.log('🔍 wrapperAddr  :', wrapperAddr)
+    console.log('🔍 baseToken   :', fromToken)
+    console.log('🔍 amountIn   :', amountIn.toLocaleString())
+    console.log('🔍 allowance is greater    :', allowed > amountIn)
+
+    const deadline = BigInt(Math.floor(Date.now() / 1000) + 60 * 200)
+    try {
+      // const bestPath = await findBestPath(BigInt(Number(toAmount)), [[fromToken, toToken]])
+      // const approve = prepareContractCall({
+      //   contract: tokenContract,
+      //   method: 'function approve(address spender, uint256 amount) public returns (bool)',
+      //   params: [env_vars.SWAP_BATCHER_ADDRESS, amountIn],
+      // })
+      // await wrapperE.callStatic.swapExactTokensForTokens(
+      //   amountIn,
+      //   0,
+      //   bestPath.bestPath,
+      //   // account?.address,
+      //   deadline
+      // )
+
+      console.log('Passed WrapperE')
+
+      const doSwap = prepareContractCall({
+        contract: swapRouterContract,
+        method:
+          'function swapExactTokensForTokens(uint amountIn, uint amountMinOut, address[] calldata path, uint deadline) external returns (uint[] memory amounts)',
+        params: [
+          ethers.utils.parseUnits(fromAmount, 18) as any,
+          ethers.utils.parseUnits(String(Number(toAmount) * 0.98), 18) as any,
+          [fromToken, toToken],
+          deadline,
+        ],
+      })
+      const approveWrapper = approve({
+        contract: tokenContract,
+        amount: fromAmount,
+        spender: env_vars.SWAP_ROUTER_ADDRESS,
+      })
+      // const call = await sendCalls({
+      //   wallet,
+      //   calls: [approveWrapper, doSwap],
+      // })
+      // console.log(call)
+      const txApprove = await sendTx(approveWrapper)
+      await waitForReceipt(txApprove)
+      console.log('Passed step 1')
+      // await sendTx(approve)
+
+      await sendTx(doSwap)
+    } catch (error: any) {
+      console.log(error)
+      toast({
+        variant: 'destructive',
+        title: 'Swap failed',
+        description: error?.data?.message || error?.message,
+      })
+    }
+  }
+  const [deadlineMins, setDeadlineMins] = useState('10000')
+
+  const [fromToken, setFromToken] = useState(tokenAddresses.WETH)
+  const [toToken, setToToken] = useState(tokenAddresses.USDC)
   const [fromAmount, setFromAmount] = useState('')
   const [toAmount, setToAmount] = useState('')
   const [isSwapping, setIsSwapping] = useState(false)
@@ -38,16 +134,37 @@ export default function Swap() {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [slippage, setSlippage] = useState('0.5')
   const { toast } = useToast()
+  const tokenContract = getContract({
+    address: getTokenData(fromToken).address,
+    chain: { ...etherlinkTestnet, rpc: env_vars.RPC_URL },
+    client,
+  })
 
-  const getTokenData = (tokenValue: string) =>
-    tokenOptionsTestnet.find(token => token.address === tokenValue) || tokenOptionsTestnet[0]
+  const wallet = useActiveWallet()
+  const { data: fromBalance } = useWalletBalance({
+    chain: { rpc: env_vars.RPC_URL, id: 128123 },
+    tokenAddress: getTokenData(fromToken)?.address,
+    address: wallet?.getAccount()?.address,
+    client,
+  })
+
+  const { data: toBalance } = useWalletBalance({
+    chain: { rpc: env_vars.RPC_URL, id: 128123 },
+    tokenAddress: getTokenData(toToken)?.address,
+    address: wallet?.getAccount()?.address,
+    client,
+  })
+
   const paths = [
-    [tokenAddresses.USDC, tokenAddresses.DAI, tokenAddresses.WBTC],
+    // [tokenAddresses.USDC, tokenAddresses.DAI, tokenAddresses.WBTC],
     [tokenAddresses.USDC, tokenAddresses.DAI],
-    [tokenAddresses.USDC, tokenAddresses.WBTC],
+    // [tokenAddresses.USDC, tokenAddresses.WBTC],
   ]
 
-  const handleSwapTokens = () => {
+  const handleSwapTokens = async () => {
+    if (fromAmount) {
+      await handleEstimateRoute()
+    }
     const tempToken = fromToken
     const tempAmount = fromAmount
     setFromToken(toToken)
@@ -79,7 +196,7 @@ export default function Swap() {
     })
     console.log(route)
     const rate = fromToken === 'ETH' ? 1700 : fromToken === 'WBTC' ? 43000 : 1
-    const estimated = (Number.parseFloat(fromAmount) * rate * 0.997).toFixed(2)
+    const estimated = (Number.parseFloat(fromAmount) * rate * 1).toFixed(2)
     setToAmount(estimated)
     setIsEstimating(false)
 
@@ -121,7 +238,7 @@ export default function Swap() {
     <div className="max-w-[1400px] mx-auto">
       <div className="mb-5 md:mb-10">
         <h1 className="text-3xl font-bold mb-2">Swap Tokens</h1>
-        <p className="text-foreground-secondary">Trade tokens with MEV protection and best rates</p>
+        <p className="text-foreground-secondary">Swap tokens with MEV protection and best rates</p>
       </div>
       <div className="grid lg:grid-cols-3 gap-8">
         {/* Swap Interface */}
@@ -171,6 +288,7 @@ export default function Swap() {
                             type="number"
                             defaultValue="20"
                             className="flex-1 px-3 py-2 bg-background-secondary border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-neon-cyan"
+                            onChange={e => setDeadlineMins(e.target.value)}
                           />
                           <span className="text-sm text-muted-foreground">minutes</span>
                         </div>
@@ -206,28 +324,11 @@ export default function Swap() {
                         </SelectValue>
                       </SelectTrigger>
                       <SelectContent>
-                        {/* {tokens.map(token => (
-                          <SelectItem key={token.value} value={token.value}>
-                            <div className="flex items-center gap-3">
-                              <div
-                                className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold"
-                                style={{ backgroundColor: token.color + '20', color: token.color }}
-                              >
-                                {token.icon}
-                              </div>
-                              <div>
-                                <div className="font-medium">{token.symbol}</div>
-                                <div className="text-xs text-muted-foreground">{token.label}</div>
-                              </div>
-                            </div>
-                          </SelectItem>
-                        ))} */}
-
                         {tokenOptionsTestnet.map((token, index) => (
                           <SelectItem key={token.address} value={token.address}>
                             <TokenProvider
                               address={token.address}
-                              chain={{ rpc: env_vars.RPC_URL, id: 11155111 }}
+                              chain={{ rpc: env_vars.RPC_URL, id: 128123 }}
                               client={client}
                             >
                               {/* <TokenIcon height={50} width={50} iconResolver={token.icon} /> */}
@@ -242,7 +343,7 @@ export default function Swap() {
                   </div>
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-foreground-secondary">
-                      Balance: 0 {fromTokenData.symbol}
+                      Balance: {fromBalance?.displayValue || 0} {fromTokenData.symbol}
                     </span>
                     <div className="flex items-center gap-2">
                       <span className="text-foreground-secondary">{0}</span>
@@ -250,7 +351,7 @@ export default function Swap() {
                         variant="ghost"
                         size="sm"
                         className="h-6 px-2 text-xs text-neon-cyan hover:text-neon-cyan/80"
-                        onClick={() => setFromAmount('')}
+                        onClick={() => setFromAmount(fromBalance?.displayValue!)}
                       >
                         MAX
                       </Button>
@@ -298,27 +399,11 @@ export default function Swap() {
                         </SelectValue>
                       </SelectTrigger>
                       <SelectContent>
-                        {/* {tokens.map(token => (
-                          <SelectItem key={token.value} value={token.value}>
-                            <div className="flex items-center gap-3">
-                              <div
-                                className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold"
-                                style={{ backgroundColor: token.color + '20', color: token.color }}
-                              >
-                                {token.icon}
-                              </div>
-                              <div>
-                                <div className="font-medium">{token.symbol}</div>
-                                <div className="text-xs text-muted-foreground">{token.label}</div>
-                              </div>
-                            </div>
-                          </SelectItem>
-                        ))} */}
                         {tokenOptionsTestnet.map((token, index) => (
                           <SelectItem key={token.address} value={token.address}>
                             <TokenProvider
                               address={token.address}
-                              chain={{ rpc: env_vars.RPC_URL, id: 11155111 }}
+                              chain={{ rpc: env_vars.RPC_URL, id: 128123 }}
                               client={client}
                             >
                               {/* <TokenIcon height={50} width={50} iconResolver={token.icon} /> */}
@@ -333,7 +418,7 @@ export default function Swap() {
                   </div>
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-foreground-secondary">
-                      Balance: {0} {toTokenData.symbol}
+                      Balance: {toBalance?.displayValue} {toTokenData.symbol}
                     </span>
                     <span className="text-foreground-secondary">{0}</span>
                   </div>
@@ -351,7 +436,9 @@ export default function Swap() {
                     <div className="flex items-center justify-between">
                       <span className="text-foreground-secondary">Rate</span>
                       <span>
-                        1 {fromToken} = {fromToken === 'ETH' ? '1,700' : '1'} {toToken}
+                        1 {getTokenData(fromToken).symbol} ={' '}
+                        {getTokenData(fromToken).symbol === 'ETH' ? '1,700' : '1'}{' '}
+                        {getTokenData(toToken).symbol}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
@@ -392,10 +479,10 @@ export default function Swap() {
                 </Button>
                 <Button
                   className="w-full h-12 text-lg"
-                  onClick={handleExecuteSwap}
-                  disabled={!toAmount || isSwapping}
+                  onClick={onClick}
+                  disabled={!toAmount || isSwapping || isPending || isSendingCall}
                 >
-                  {isSwapping ? (
+                  {isPending || isSendingCall || isSwapping ? (
                     <>
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-black mr-2"></div>
                       Swapping...

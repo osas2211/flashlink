@@ -847,8 +847,8 @@
       ]
     },
     "C:\\code_base\\hackathons\\flashlink\\contracts\\SwapRouter.sol": {
-      "lastModificationDate": 1753230297601,
-      "contentHash": "9971c7f04635f057923996b7ebba957a",
+      "lastModificationDate": 1753501222590,
+      "contentHash": "5dd9761bb04f20e571d5333f538b683b",
       "sourceName": "contracts/SwapRouter.sol",
       "solcConfig": {
         "version": "0.8.17",
@@ -886,8 +886,8 @@
       ]
     },
     "C:\\code_base\\hackathons\\flashlink\\contracts\\SwapBatcher.sol": {
-      "lastModificationDate": 1753230500747,
-      "contentHash": "88b708fcdb8504bc94bdd866e5c0be73",
+      "lastModificationDate": 1753230669505,
+      "contentHash": "9cb31908baf29e6da58e7ab6b2254a48",
       "sourceName": "contracts/SwapBatcher.sol",
       "solcConfig": {
         "version": "0.8.17",
@@ -915,7 +915,8 @@
       "imports": [
         "@openzeppelin/contracts/token/ERC20/ERC20.sol",
         "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol",
-        "./SwapRouter.sol"
+        "./SwapRouter.sol",
+        "./utils/structs.sol"
       ],
       "versionPragmas": [
         "^0.8.17"
@@ -925,8 +926,8 @@
       ]
     },
     "C:\\code_base\\hackathons\\flashlink\\contracts\\utils\\structs.sol": {
-      "lastModificationDate": 1753222156509,
-      "contentHash": "d60d8a2c01097f05c206c6b5b6e2f913",
+      "lastModificationDate": 1753230656084,
+      "contentHash": "9a6d170d52dfb221a8be25fb0df2ace4",
       "sourceName": "contracts/utils/structs.sol",
       "solcConfig": {
         "version": "0.8.17",

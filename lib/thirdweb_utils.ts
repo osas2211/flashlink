@@ -11,6 +11,7 @@ export const wallets = [
   inAppWallet({
     // available auth methods
     auth: { options: ['wallet', 'google', 'discord', 'github', 'email', 'telegram'] },
+
     // app metadata
     metadata: {
       name: 'FlashLink',
@@ -21,9 +22,9 @@ export const wallets = [
       // },
     },
     // enable gasless transactions for the wallet
-    executionMode: {
-      mode: 'EIP7702',
-      sponsorGas: true,
-    },
+    // executionMode: {
+    //   mode: 'EIP7702',
+    //   sponsorGas: true,
+    // },
   }),
 ]

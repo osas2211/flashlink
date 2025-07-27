@@ -65,7 +65,7 @@ export default function Header({ sidebarCollapsed }: HeaderProps) {
         <ConnectButton
           client={client}
           wallets={wallets}
-          chains={[{ rpc: env_vars.RPC_URL, id: 11155111 }]}
+          chains={[{ rpc: env_vars.RPC_URL, id: 128123, testnet: true }]}
           signInButton={{ className: '!h-[45px]' }}
         />
 

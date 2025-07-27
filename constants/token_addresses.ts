@@ -24,13 +24,13 @@ export interface TokenOption {
 }
 
 export const tokenOptionsTestnet: TokenOption[] = [
-  {
-    value: 'ETH',
-    label: 'ETH Sepolia',
-    symbol: 'ETH',
-    icon: 'https://cryptoicons.org/api/icon/dai/200',
-    address: '0x3A9D48AB9751398BbFa63ad67599Bb04e4BdF98b',
-  },
+  // {
+  //   value: 'ETH',
+  //   label: 'ETH Sepolia',
+  //   symbol: 'ETH',
+  //   icon: 'https://cryptoicons.org/api/icon/dai/200',
+  //   address: '0x3A9D48AB9751398BbFa63ad67599Bb04e4BdF98b',
+  // },
   {
     value: 'WETH',
     label: 'Wrapped ETH',
@@ -59,13 +59,13 @@ export const tokenOptionsTestnet: TokenOption[] = [
     icon: 'https://cryptoicons.org/api/icon/dai/200',
     address: '0x5B1fd21df873E66B4Fc83D6FDc62041eC55c07c5',
   },
-  {
-    value: 'WETH',
-    label: 'Wrapped Ether',
-    symbol: 'WETH',
-    icon: 'https://cryptoicons.org/api/icon/eth/200',
-    address: '0x7b79995e5f793a07Bc00c21412e50Ecae098e7f9',
-  },
+  // {
+  //   value: 'WETH',
+  //   label: 'Wrapped Ether',
+  //   symbol: 'WETH',
+  //   icon: 'https://cryptoicons.org/api/icon/eth/200',
+  //   address: '0x7b79995e5f793a07Bc00c21412e50Ecae098e7f9',
+  // },
   {
     value: 'WBTC',
     label: 'Wrapped Bitcoin',
@@ -73,39 +73,39 @@ export const tokenOptionsTestnet: TokenOption[] = [
     icon: 'https://cryptoicons.org/api/icon/wbtc/200',
     address: '0x4faDa63e1C589fEa33c73f027036d8c01e737c07',
   },
-  {
-    value: 'LINK',
-    label: 'Chainlink',
-    symbol: 'LINK',
-    icon: 'https://cryptoicons.org/api/icon/link/200',
-    address: '0x779877A7B0D9E8603169DdbD7836e478b4624789',
-  },
-  {
-    value: 'UNI',
-    label: 'Uniswap',
-    symbol: 'UNI',
-    icon: 'https://cryptoicons.org/api/icon/uni/200',
-    address: '0x492E85cD024A271C4F19d8b7e9050Ef2bbFeDcCA',
-  },
-  {
-    value: 'AAVE',
-    label: 'Aave',
-    symbol: 'AAVE',
-    icon: 'https://cryptoicons.org/api/icon/aave/200',
-    address: '0x5bb220afc6e2e008cb2302a83536a019ed245aa2',
-  },
-  {
-    value: 'COMP',
-    label: 'Compound',
-    symbol: 'COMP',
-    icon: 'https://cryptoicons.org/api/icon/comp/200',
-    address: '0xd3b4ebc177cef4da4e213b95ee09b23ee8a2e303',
-  },
-  {
-    value: 'MKR',
-    label: 'Maker',
-    symbol: 'MKR',
-    icon: 'https://cryptoicons.org/api/icon/mkr/200',
-    address: '0x2579a429bdd3ed5ac1e78bbb3f72b5db5deae148',
-  },
+  // {
+  //   value: 'LINK',
+  //   label: 'Chainlink',
+  //   symbol: 'LINK',
+  //   icon: 'https://cryptoicons.org/api/icon/link/200',
+  //   address: '0x779877A7B0D9E8603169DdbD7836e478b4624789',
+  // },
+  // {
+  //   value: 'UNI',
+  //   label: 'Uniswap',
+  //   symbol: 'UNI',
+  //   icon: 'https://cryptoicons.org/api/icon/uni/200',
+  //   address: '0x492E85cD024A271C4F19d8b7e9050Ef2bbFeDcCA',
+  // },
+  // {
+  //   value: 'AAVE',
+  //   label: 'Aave',
+  //   symbol: 'AAVE',
+  //   icon: 'https://cryptoicons.org/api/icon/aave/200',
+  //   address: '0x5bb220afc6e2e008cb2302a83536a019ed245aa2',
+  // },
+  // {
+  //   value: 'COMP',
+  //   label: 'Compound',
+  //   symbol: 'COMP',
+  //   icon: 'https://cryptoicons.org/api/icon/comp/200',
+  //   address: '0xd3b4ebc177cef4da4e213b95ee09b23ee8a2e303',
+  // },
+  // {
+  //   value: 'MKR',
+  //   label: 'Maker',
+  //   symbol: 'MKR',
+  //   icon: 'https://cryptoicons.org/api/icon/mkr/200',
+  //   address: '0x2579a429bdd3ed5ac1e78bbb3f72b5db5deae148',
+  // },
 ]
