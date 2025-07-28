@@ -34,12 +34,10 @@ import {
 import { client } from '@/lib/thirdweb_utils'
 import { env_vars } from '@/lib/env_vars'
 import { useWalletBalance, useActiveWallet } from 'thirdweb/react'
-import { BigNumber, ethers } from 'ethers'
+import { ethers } from 'ethers'
 import { etherlinkTestnet } from 'thirdweb/chains'
-import SwapRouterAbi from '../../../artifacts/contracts/SwapRouter.sol/SwapRouter.json'
-import SwapBatcherAbi from '../../../artifacts/contracts/SwapBatcher.sol/SwapBatcher.json'
 import { getContract, prepareContractCall, waitForReceipt } from 'thirdweb'
-import { allowance, approve } from 'thirdweb/extensions/erc20'
+import { approve } from 'thirdweb/extensions/erc20'
 import { generatePaths } from '@/lib/generatePaths'
 import { useFindBestRoute } from '@/hooks/use-find-best-route'
 
@@ -53,8 +51,7 @@ const swapRouterContract = getContract({
 })
 
 export default function Swap() {
-  const { mutateAsync: sendTx, data: transactionResult, isPending } = useSendTransaction()
-  const { mutateAsync: sendCalls, data: id, isPending: isSendingCall } = useSendCalls()
+  const { mutateAsync: sendTx, isPending } = useSendTransaction()
   const { mutateAsync: findBestPath, isLoading: isFindingBestPath } = useFindBestRoute()
   const {
     mutateAsync: estimateGas,
@@ -62,37 +59,6 @@ export default function Swap() {
     isPending: isEstimatingGas,
   } = useEstimateGas()
 
-  const onClick = async () => {
-    try {
-      const amountIn = BigInt(ethers.utils.parseUnits(fromAmount, 18).toString())
-      const amountMinOut = BigInt(ethers.utils.parseUnits(toAmount, 18).toString())
-      const deadline = BigInt(Math.floor(Date.now() / 1000) + 60 * 200)
-
-      const doSwap = prepareContractCall({
-        contract: swapRouterContract,
-        method:
-          'function swapExactTokensForTokens(uint amountIn, uint amountMinOut, address[] calldata path, uint deadline) external returns (uint[] memory amounts)',
-        params: [amountIn, amountMinOut, bestRouteAddresses, deadline],
-      })
-      const approveWrapper = approve({
-        contract: tokenContract,
-        amount: fromAmount,
-        spender: env_vars.SWAP_ROUTER_ADDRESS,
-      })
-      const txApprove = await sendTx(approveWrapper)
-      await waitForReceipt(txApprove)
-      console.log('Spend Approved')
-
-      await sendTx(doSwap)
-    } catch (error: any) {
-      console.log(error)
-      toast({
-        variant: 'destructive',
-        title: 'Swap failed',
-        description: error?.data?.message || error?.message,
-      })
-    }
-  }
   const [deadlineMins, setDeadlineMins] = useState('10000')
   const [networkFee, setNetworkFee] = useState('0')
   const [bestRoute, setBestRoute] = useState<string[]>([])
@@ -102,8 +68,6 @@ export default function Swap() {
   const [toToken, setToToken] = useState(tokenAddresses.USDC)
   const [fromAmount, setFromAmount] = useState('')
   const [toAmount, setToAmount] = useState('')
-  const [isSwapping, setIsSwapping] = useState(false)
-  const [isEstimating, setIsEstimating] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [slippage, setSlippage] = useState('0.5')
   const { toast } = useToast()
@@ -128,22 +92,16 @@ export default function Swap() {
     client,
   })
 
-  const paths = [
-    // [tokenAddresses.USDC, tokenAddresses.DAI, tokenAddresses.WBTC],
-    [tokenAddresses.USDC, tokenAddresses.DAI],
-    // [tokenAddresses.USDC, tokenAddresses.WBTC],
-  ]
-
   const handleSwapTokens = async () => {
-    if (fromAmount) {
-      await handleEstimateRoute(fromToken, toToken)
-    }
     const tempToken = fromToken
     const tempAmount = fromAmount
     setFromToken(toToken)
     setToToken(tempToken)
     setFromAmount(toAmount)
     setToAmount(tempAmount)
+    if (toAmount) {
+      await handleEstimateRoute(toToken, tempToken)
+    }
   }
 
   const handleEstimateRoute = async (fromToken: string, toToken: string) => {
@@ -192,28 +150,43 @@ export default function Swap() {
   }
 
   const handleExecuteSwap = async () => {
-    if (!fromAmount || !toAmount) {
-      toast({
-        title: 'Complete Swap Details',
-        description: 'Please estimate route first',
-        variant: 'destructive',
+    try {
+      const amountIn = BigInt(ethers.utils.parseUnits(fromAmount, 18).toString())
+      const amountMinOut = BigInt(ethers.utils.parseUnits(toAmount, 18).toString())
+      const deadline = BigInt(Math.floor(Date.now() / 1000) + 60 * Number(deadlineMins))
+
+      const doSwap = prepareContractCall({
+        contract: swapRouterContract,
+        method:
+          'function swapExactTokensForTokens(uint amountIn, uint amountMinOut, address[] calldata path, uint deadline) external returns (uint[] memory amounts)',
+        params: [amountIn, amountMinOut, bestRouteAddresses, deadline],
       })
-      return
+      const approveWrapper = approve({
+        contract: tokenContract,
+        amount: fromAmount,
+        spender: env_vars.SWAP_ROUTER_ADDRESS,
+      })
+      const txApprove = await sendTx(approveWrapper)
+      await waitForReceipt(txApprove)
+      console.log('Spend Approved')
+
+      await sendTx(doSwap)
+      setFromAmount('')
+      setToAmount('')
+      toast({
+        title: 'Swap Successful! 🎉',
+        description: `Swapped ${Number(fromAmount).toFixed(3)} ${
+          getTokenData(fromToken).symbol
+        } for ${Number(toAmount).toFixed(3)} ${getTokenData(toToken).symbol}`,
+      })
+    } catch (error: any) {
+      console.log(error)
+      toast({
+        variant: 'destructive',
+        title: 'Swap failed',
+        description: error?.data?.message || error?.message,
+      })
     }
-
-    setIsSwapping(true)
-
-    // Simulate swap execution
-    await new Promise(resolve => setTimeout(resolve, 3000))
-
-    setIsSwapping(false)
-    setFromAmount('')
-    setToAmount('')
-
-    toast({
-      title: 'Swap Successful! 🎉',
-      description: `Swapped ${fromAmount} ${fromToken} for ${toAmount} ${toToken}`,
-    })
   }
 
   const fromTokenData = getTokenData(fromToken)
@@ -312,9 +285,7 @@ export default function Swap() {
                       <SelectTrigger className="w-36 border-0 bg-background-secondary hover:bg-background">
                         <SelectValue>
                           <div className="flex items-center gap-2">
-                            {/* <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">
-                              {fromTokenData.icon}
-                            </div> */}
+                            <img src={fromTokenData.icon} alt="" className="h-6 w-6" />
                             <span className="font-medium">{fromTokenData.symbol}</span>
                           </div>
                         </SelectValue>
@@ -329,10 +300,10 @@ export default function Swap() {
                                 chain={{ rpc: env_vars.RPC_URL, id: 128123 }}
                                 client={client}
                               >
-                                {/* <TokenIcon height={50} width={50} iconResolver={token.icon} /> */}
-                                {/* <img src={token.icon} alt="" /> */}
-                                <TokenIcon />
-                                <TokenSymbol />
+                                <div className="flex items-center gap-2">
+                                  <TokenIcon height={24} width={24} iconResolver={token.icon} />
+                                  <TokenSymbol />
+                                </div>
                               </TokenProvider>
                             </SelectItem>
                           ))}
@@ -398,9 +369,7 @@ export default function Swap() {
                       <SelectTrigger className="w-36 border-0 bg-background-secondary hover:bg-background">
                         <SelectValue>
                           <div className="flex items-center gap-2">
-                            {/* <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">
-                              {toTokenData.icon}
-                            </div> */}
+                            <img src={toTokenData.icon} alt="" className="h-6 w-6" />
                             <span className="font-medium">{toTokenData.symbol}</span>
                           </div>
                         </SelectValue>
@@ -415,10 +384,10 @@ export default function Swap() {
                                 chain={{ rpc: env_vars.RPC_URL, id: 128123 }}
                                 client={client}
                               >
-                                {/* <TokenIcon height={50} width={50} iconResolver={token.icon} /> */}
-                                {/* <img src={token.icon} alt="" /> */}
-                                <TokenIcon />
-                                <TokenSymbol />
+                                <div className="flex items-center gap-2">
+                                  <TokenIcon height={24} width={24} iconResolver={token.icon} />
+                                  <TokenSymbol />
+                                </div>
                               </TokenProvider>
                             </SelectItem>
                           ))}
@@ -445,7 +414,7 @@ export default function Swap() {
                     <div className="flex items-center justify-between">
                       <span className="text-foreground-secondary">Rate</span>
                       <span>
-                        1 {getTokenData(fromToken).symbol} = {'1'} {getTokenData(toToken).symbol}
+                        1 {fromTokenData.symbol} = {'1'} {toTokenData.symbol}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
@@ -476,9 +445,9 @@ export default function Swap() {
                   variant="secondary"
                   className="w-full h-12"
                   onClick={() => handleEstimateRoute(fromToken, toToken)}
-                  disabled={!fromAmount || isEstimating || isEstimatingGas || isFindingBestPath}
+                  disabled={!fromAmount || isEstimatingGas || isFindingBestPath || isPending}
                 >
-                  {isEstimating || isEstimatingGas || isFindingBestPath ? (
+                  {isEstimatingGas || isFindingBestPath ? (
                     <>
                       <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
                       Estimating...
@@ -492,17 +461,10 @@ export default function Swap() {
                 </Button>
                 <Button
                   className="w-full h-12 text-lg"
-                  onClick={onClick}
-                  disabled={
-                    !toAmount ||
-                    isSwapping ||
-                    isPending ||
-                    isSendingCall ||
-                    isEstimatingGas ||
-                    isFindingBestPath
-                  }
+                  onClick={handleExecuteSwap}
+                  disabled={!toAmount || isPending || isEstimatingGas || isFindingBestPath}
                 >
-                  {isPending || isSendingCall || isSwapping ? (
+                  {isPending ? (
                     <>
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-black mr-2"></div>
                       Swapping...
