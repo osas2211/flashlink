@@ -28,13 +28,22 @@ async function main() {
     USDC: tokenAddresses.USDC,
     DAI: tokenAddresses.DAI,
     WBTC: tokenAddresses.WBTC,
+    USDT: tokenAddresses.USDT,
+    WETH: tokenAddresses.WETH,
   }
   const PAIRS = [
     ['USDC', 'DAI'],
     ['USDC', 'WBTC'],
+    ['USDC', 'USDT'],
+    ['USDC', 'WETH'],
     ['DAI', 'WBTC'],
+    ['DAI', 'USDT'],
+    ['DAI', 'WETH'],
+    ['WBTC', 'USDT'],
+    ['WBTC', 'WETH'],
+    ['USDT', 'WETH'],
   ]
-  const AMOUNT = ethers.utils.parseUnits('1000', 18)
+  const AMOUNT = ethers.utils.parseUnits('100000000', 18)
 
   async function approve(addr) {
     const erc20 = new ethers.Contract(
@@ -79,7 +88,7 @@ async function main() {
       deadline
     )
     await txAdd.wait()
-    console.log(` • Liquidity added: 1000 ${A} + 1000 ${B}`)
+    console.log(` • Liquidity added: ${A} + ${B}`)
   }
 
   // final sanity‐check quote
