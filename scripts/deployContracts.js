@@ -22,6 +22,12 @@ async function main() {
   await swapRouter.deployed()
 
   console.log('SwapRouter deployed to:', swapRouter.address)
+
+  const SwapBatcher = await ethers.getContractFactory('SwapBatcher')
+  const swapBatcher = await SwapBatcher.deploy(ammRouterAddress)
+  await swapBatcher.deployed()
+
+  console.log('SwapBatcher deployed to:', swapBatcher.address)
 }
 
 // run the script
