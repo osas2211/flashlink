@@ -1,20 +1,11 @@
-//SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "./SwapRouter.sol";
 import "./utils/structs.sol";
 
 contract SwapBatcher {
   using SafeERC20 for ERC20;
-  // struct Order {
-  //   address user;
-  //   address to;
-  //   uint amountIn;
-  //   uint amountMinOut;
-  //   address[] path;
-  //   uint deadline;
-  // }
 
   SwapRouter public immutable router;
   address public owner;
@@ -24,13 +15,13 @@ contract SwapBatcher {
   event OrderQueued(uint indexed orderId, address indexed user);
   event BatchExecuted(uint totalOrders);
 
-  modifier onlyOwner(){
-    require(msg.sender == owner, " Not Owner");
+  modifier onlyOwner() {
+    require(msg.sender == owner, "Not Owner");
     _;
   }
 
-  constructor(address _ammRouter){
-    router = SwapRouter(_ammRouter);
+  constructor(address _swapRouter) {
+    router = SwapRouter(_swapRouter);
     owner = msg.sender;
   }
 
@@ -39,39 +30,53 @@ contract SwapBatcher {
     uint amountMinOut,
     address[] calldata path,
     uint deadline
-  ) external{
+  ) external {
     // Pull funds from User
-    ERC20(path[0]).transferFrom(msg.sender, address(this), amountIn);
+    ERC20(path[0]).safeTransferFrom(msg.sender, address(this), amountIn);
 
-    // Push order to queue
+    // Store who to send the output to:
     queue.push(
       Order({
-        amountIn: amountIn,
-        amountMinOut: amountMinOut,
-        path: path,
-        deadline: deadline,
         user: msg.sender,
-        to: msg.sender
+        to:   msg.sender,
+        amountIn:    amountIn,
+        amountMinOut: amountMinOut,
+        path:        path,
+        deadline:    deadline
       })
     );
 
     emit OrderQueued(queue.length - 1, msg.sender);
   }
 
-  function executeBatch() external onlyOwner{
-    uint queue_length = queue.length;
-    require(queue_length > 0, "No order to execute");
+  function executeBatch() external onlyOwner {
+    uint n = queue.length;
+    require(n > 0, "No order to execute");
 
-    for(uint index; index < queue_length; index++){
-      Order memory order = queue[index];
+    for (uint i = 0; i < n; i++) {
+      Order memory order = queue[i];
       address baseToken = order.path[0];
+      address outToken  = order.path[order.path.length - 1];
 
-      ERC20(baseToken).approve(address(router), order.amountIn);
+     // Approve the router to pull the user's tokens
+      ERC20(baseToken).safeIncreaseAllowance(address(router), order.amountIn);
 
-      router.swapExactTokensForTokens(order.amountIn, order.amountMinOut, order.path, order.deadline);
+     // Do the swap and capture the returned amounts[]
+      uint[] memory amounts = router.swapExactTokensForTokens(
+        order.amountIn,
+        order.amountMinOut,
+        order.path,
+        order.deadline
+      );
+
+     // The last element is how many outTokens we got
+      uint outAmount = amounts[amounts.length - 1];
+
+     // Forward the output tokens to the user
+      ERC20(outToken).safeTransfer(order.to, outAmount);
     }
 
     delete queue;
-    emit BatchExecuted(queue_length);
+    emit BatchExecuted(n);
   }
 }

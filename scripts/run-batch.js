@@ -7,7 +7,7 @@ async function main() {
   const [keeper] = await ethers.getSigners()
 
   // 2. Connect to your deployed batcher
-  const batcher = await ethers.getContractAt('FlashLinkBatcher', process.env.BATCHER_ADDRESS)
+  const batcher = await ethers.getContractAt('SwapBatcher', process.env.SWAP_BATCHER_ADDRESS)
 
   // 3. Check queue length
   const queueLen = await batcher.queueLength()

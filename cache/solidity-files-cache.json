@@ -886,8 +886,8 @@
       ]
     },
     "C:\\code_base\\hackathons\\flashlink\\contracts\\SwapBatcher.sol": {
-      "lastModificationDate": 1753230669505,
-      "contentHash": "9cb31908baf29e6da58e7ab6b2254a48",
+      "lastModificationDate": 1753703036803,
+      "contentHash": "38365c4f92f5ed00e3cd4869862db5d4",
       "sourceName": "contracts/SwapBatcher.sol",
       "solcConfig": {
         "version": "0.8.17",
@@ -913,7 +913,6 @@
         }
       },
       "imports": [
-        "@openzeppelin/contracts/token/ERC20/ERC20.sol",
         "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol",
         "./SwapRouter.sol",
         "./utils/structs.sol"

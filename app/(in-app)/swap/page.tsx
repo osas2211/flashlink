@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { ArrowDownUp, Settings, Info, Zap, TrendingUp, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
@@ -28,7 +28,6 @@ import {
   TokenProvider,
   TokenSymbol,
   useSendTransaction,
-  useSendCalls,
   useEstimateGas,
 } from 'thirdweb/react'
 import { client } from '@/lib/thirdweb_utils'
@@ -50,14 +49,16 @@ const swapRouterContract = getContract({
   client,
 })
 
+const batcherContract = getContract({
+  address: env_vars.SWAP_BATCHER_ADDRESS,
+  chain: { ...etherlinkTestnet, rpc: env_vars.RPC_URL },
+  client,
+})
+
 export default function Swap() {
   const { mutateAsync: sendTx, isPending } = useSendTransaction()
   const { mutateAsync: findBestPath, isLoading: isFindingBestPath } = useFindBestRoute()
-  const {
-    mutateAsync: estimateGas,
-    data: gasEstimate,
-    isPending: isEstimatingGas,
-  } = useEstimateGas()
+  const { mutateAsync: estimateGas, isPending: isEstimatingGas } = useEstimateGas()
 
   const [deadlineMins, setDeadlineMins] = useState('10000')
   const [networkFee, setNetworkFee] = useState('0')
@@ -93,14 +94,16 @@ export default function Swap() {
   })
 
   const handleSwapTokens = async () => {
-    const tempToken = fromToken
-    const tempAmount = fromAmount
-    setFromToken(toToken)
-    setToToken(tempToken)
-    setFromAmount(toAmount)
-    setToAmount(tempAmount)
-    if (toAmount) {
-      await handleEstimateRoute(toToken, tempToken)
+    const tempToken1 = fromToken
+    const tempAmount1 = fromAmount
+    const tempToken2 = toToken
+    const tempAmount2 = toAmount
+    setFromToken(tempToken2)
+    setToToken(tempToken1)
+    setFromAmount(tempAmount2)
+    setToAmount(tempAmount1)
+    if (tempAmount1) {
+      await handleEstimateRoute(tempToken2, tempToken1)
     }
   }
 
@@ -175,6 +178,46 @@ export default function Swap() {
       setToAmount('')
       toast({
         title: 'Swap Successful! 🎉',
+        description: `Swapped ${Number(fromAmount).toFixed(3)} ${
+          getTokenData(fromToken).symbol
+        } for ${Number(toAmount).toFixed(3)} ${getTokenData(toToken).symbol}`,
+      })
+    } catch (error: any) {
+      console.log(error)
+      toast({
+        variant: 'destructive',
+        title: 'Swap failed',
+        description: error?.data?.message || error?.message,
+      })
+    }
+  }
+
+  const handleAddToQueue = async () => {
+    try {
+      const amountIn = BigInt(ethers.utils.parseUnits(fromAmount, 18).toString())
+      const amountMinOut = BigInt(ethers.utils.parseUnits(toAmount, 18).toString())
+      const deadline = BigInt(Math.floor(Date.now() / 1000) + 60 * Number(deadlineMins))
+
+      const doSwap = prepareContractCall({
+        contract: batcherContract,
+        method:
+          'function queueOrder(uint amountIn, uint amountMinOut, address[] calldata path, uint deadline) external',
+        params: [amountIn, amountMinOut, bestRouteAddresses, deadline],
+      })
+      const approveWrapper = approve({
+        contract: tokenContract,
+        amount: fromAmount,
+        spender: env_vars.SWAP_ROUTER_ADDRESS,
+      })
+      const txApprove = await sendTx(approveWrapper)
+      await waitForReceipt(txApprove)
+      console.log('Spend Approved')
+
+      await sendTx(doSwap)
+      setFromAmount('')
+      setToAmount('')
+      toast({
+        title: 'Order queued with MEV Protection! 🎉',
         description: `Swapped ${Number(fromAmount).toFixed(3)} ${
           getTokenData(fromToken).symbol
         } for ${Number(toAmount).toFixed(3)} ${getTokenData(toToken).symbol}`,
