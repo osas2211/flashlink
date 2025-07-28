@@ -8,22 +8,9 @@ async function main() {
 
   // 2. Connect to your deployed batcher
   const batcher = await ethers.getContractAt('SwapBatcher', process.env.SWAP_BATCHER_ADDRESS)
+  const tx = await batcher.connect(keeper).executeBatch()
 
-  // 3. Check queue length
-  const queueLen = await batcher.queueLength()
-  console.log('Orders queued:', queueLen.toString())
-
-  // 4. Conditional execution
-  const MIN_ORDERS = parseInt(process.env.MIN_ORDERS || '5')
-  if (queueLen.gte(MIN_ORDERS)) {
-    console.log('Executing batch...')
-    const tx = await batcher.connect(keeper).executeBatch()
-    console.log('Transaction hash:', tx.hash)
-    await tx.wait()
-    console.log('Batch executed ✅')
-  } else {
-    console.log(`Waiting for at least ${MIN_ORDERS} orders…`)
-  }
+  console.log(tx)
 }
 
 main()

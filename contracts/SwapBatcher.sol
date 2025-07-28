@@ -79,4 +79,8 @@ contract SwapBatcher {
     delete queue;
     emit BatchExecuted(n);
   }
+
+  function getQueueLength() external view returns (uint256) {
+    return queue.length;
+  }
 }

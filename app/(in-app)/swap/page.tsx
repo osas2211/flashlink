@@ -207,7 +207,7 @@ export default function Swap() {
       const approveWrapper = approve({
         contract: tokenContract,
         amount: fromAmount,
-        spender: env_vars.SWAP_ROUTER_ADDRESS,
+        spender: env_vars.SWAP_BATCHER_ADDRESS,
       })
       const txApprove = await sendTx(approveWrapper)
       await waitForReceipt(txApprove)
@@ -504,7 +504,7 @@ export default function Swap() {
                 </Button>
                 <Button
                   className="w-full h-12 text-lg"
-                  onClick={handleExecuteSwap}
+                  onClick={handleAddToQueue}
                   disabled={!toAmount || isPending || isEstimatingGas || isFindingBestPath}
                 >
                   {isPending ? (
