@@ -24,7 +24,10 @@ async function main() {
   // console.log('SwapRouter deployed to:', swapRouter.address)
 
   const SwapBatcher = await ethers.getContractFactory('SwapBatcher')
-  const swapBatcher = await SwapBatcher.deploy(process.env.SWAP_ROUTER_ADDRESS)
+  const swapBatcher = await SwapBatcher.deploy(
+    process.env.SWAP_ROUTER_ADDRESS,
+    process.env.GELATO_DEDICATED_MSG_SENDER
+  )
   await swapBatcher.deployed()
 
   console.log('SwapBatcher deployed to:', swapBatcher.address)
