@@ -13,6 +13,7 @@
     "@gelatonetwork/automate-sdk": "^3.1.0",
     "@gelatonetwork/web3-functions-sdk": "^2.4.4",
     "@hookform/resolvers": "^3.9.1",
+    "@nomicfoundation/hardhat-verify": "^2.1.0",
     "@openzeppelin/contracts": "^4.9.6",
     "@radix-ui/react-accordion": "1.2.2",
     "@radix-ui/react-alert-dialog": "1.1.4",

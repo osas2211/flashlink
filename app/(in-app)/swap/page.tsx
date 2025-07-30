@@ -214,8 +214,8 @@ export default function Swap() {
       console.log('Spend Approved')
 
       await sendTx(doSwap)
-      setFromAmount('')
-      setToAmount('')
+      // setFromAmount('')
+      // setToAmount('')
       toast({
         title: 'Order queued with MEV Protection! 🎉',
         description: `Swapped ${Number(fromAmount).toFixed(3)} ${
