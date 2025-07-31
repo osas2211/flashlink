@@ -40,6 +40,7 @@ import { approve } from 'thirdweb/extensions/erc20'
 import { generatePaths } from '@/lib/generatePaths'
 import { useFindBestRoute } from '@/hooks/use-find-best-route'
 import { SymbolOverview } from 'react-ts-tradingview-widgets'
+import { Switch } from '@/components/ui/switch'
 
 const getTokenData = (tokenValue: string) =>
   tokenOptionsTestnet.find(token => token.address === tokenValue) || tokenOptionsTestnet[0]
@@ -57,6 +58,7 @@ const batcherContract = getContract({
 })
 
 export default function Swap() {
+  const [mevProtection, setMevProtection] = useState(true)
   const { mutateAsync: sendTx, isPending } = useSendTransaction()
   const { mutateAsync: findBestPath, isLoading: isFindingBestPath } = useFindBestRoute()
   const { mutateAsync: estimateGas, isPending: isEstimatingGas } = useEstimateGas()
@@ -506,7 +508,13 @@ export default function Swap() {
                 </Button>
                 <Button
                   className="w-full h-12 text-lg"
-                  onClick={handleAddToQueue}
+                  onClick={async () => {
+                    if (mevProtection) {
+                      await handleAddToQueue()
+                    } else {
+                      await handleExecuteSwap()
+                    }
+                  }}
                   disabled={!toAmount || isPending || isEstimatingGas || isFindingBestPath}
                 >
                   {isPending ? (
@@ -524,13 +532,44 @@ export default function Swap() {
               </div>
 
               {/* MEV Protection Notice */}
-              <div className="mt-4 p-3 bg-neon-cyan/10 border border-neon-cyan/30 rounded-2xl">
+              <div>
+                <div className="flex items-center justify-between gap-4 text-xs mt-4">
+                  <p className="text-gray-200">Toggle MEV Protection</p>
+                  <Switch checked={mevProtection} onCheckedChange={setMevProtection} />
+                </div>
+              </div>
+              <div
+                className={`mt-4 p-3 rounded-2xl ${
+                  mevProtection
+                    ? 'bg-neon-cyan/10 border border-neon-cyan/30'
+                    : 'bg-red-500/10 border border-red-500/30'
+                }`}
+              >
                 <div className="flex items-start space-x-2">
-                  <Info className="h-4 w-4 text-neon-cyan mt-0.5 flex-shrink-0" />
-                  <p className="text-xs text-neon-cyan">
-                    MEV Protection enabled. Your transaction is protected from front-running and
-                    sandwich attacks.
-                  </p>
+                  <Info
+                    className={`h-4 w-4 ${
+                      mevProtection ? 'text-neon-cyan' : 'text-red-500'
+                    } mt-0.5 flex-shrink-0`}
+                  />
+                  <div className={`text-xs ${mevProtection ? 'text-neon-cyan' : 'text-red-500'}`}>
+                    {mevProtection ? (
+                      <>
+                        {' '}
+                        <p>
+                          MEV Protection enabled. Your transaction is protected from front-running
+                          and sandwich attacks.
+                        </p>
+                        <p className="mt-2">
+                          NB: Transactions using MEV protection are usually slower.
+                        </p>
+                      </>
+                    ) : (
+                      <p>
+                        MEV Protection disabled. Your transaction is not protected from
+                        front-running and sandwich attacks.
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
             </Card>
