@@ -39,6 +39,7 @@ import { getContract, prepareContractCall, waitForReceipt } from 'thirdweb'
 import { approve } from 'thirdweb/extensions/erc20'
 import { generatePaths } from '@/lib/generatePaths'
 import { useFindBestRoute } from '@/hooks/use-find-best-route'
+import { SymbolOverview } from 'react-ts-tradingview-widgets'
 
 const getTokenData = (tokenValue: string) =>
   tokenOptionsTestnet.find(token => token.address === tokenValue) || tokenOptionsTestnet[0]
@@ -214,8 +215,8 @@ export default function Swap() {
       console.log('Spend Approved')
 
       await sendTx(doSwap)
-      // setFromAmount('')
-      // setToAmount('')
+      setFromAmount('')
+      setToAmount('')
       toast({
         title: 'Order queued with MEV Protection! 🎉',
         description: `Swapped ${Number(fromAmount).toFixed(3)} ${
@@ -457,7 +458,8 @@ export default function Swap() {
                     <div className="flex items-center justify-between">
                       <span className="text-foreground-secondary">Rate</span>
                       <span>
-                        1 {fromTokenData.symbol} = {'1'} {toTokenData.symbol}
+                        1 {fromTokenData.symbol} ={' '}
+                        {(Number(fromAmount) / Number(toAmount)).toFixed(2)} {toTokenData.symbol}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
@@ -542,7 +544,23 @@ export default function Swap() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            <TradingChart />
+            {/* <TradingChart /> */}
+            <SymbolOverview
+              symbols={[
+                [
+                  fromTokenData.label,
+                  fromTokenData.symbol === 'WETH' ? 'ETH' : fromTokenData.symbol,
+                ],
+                [toTokenData.label, toTokenData.symbol],
+              ]}
+              dateFormat="MMM dd, yyyy"
+              colorTheme="dark"
+              chartType="area"
+              locale="en"
+              scaleMode="Percentage"
+              height={700}
+              width={'100%'}
+            />
           </motion.div>
         </div>
       </div>
