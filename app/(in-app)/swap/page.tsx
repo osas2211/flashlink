@@ -21,7 +21,6 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { useToast } from '@/hooks/use-toast'
-import TradingChart from '../../../components/TradingChart'
 import { tokenAddresses, tokenOptionsTestnet } from '@/constants/token_addresses'
 import {
   TokenIcon,
@@ -39,8 +38,8 @@ import { getContract, prepareContractCall, waitForReceipt } from 'thirdweb'
 import { approve } from 'thirdweb/extensions/erc20'
 import { generatePaths } from '@/lib/generatePaths'
 import { useFindBestRoute } from '@/hooks/use-find-best-route'
-import { SymbolOverview } from 'react-ts-tradingview-widgets'
 import { Switch } from '@/components/ui/switch'
+import { TokenChart } from './TokenChart'
 
 const getTokenData = (tokenValue: string) =>
   tokenOptionsTestnet.find(token => token.address === tokenValue) || tokenOptionsTestnet[0]
@@ -577,31 +576,7 @@ export default function Swap() {
         </div>
 
         {/* Trading Chart */}
-        <div className="space-y-6 col-span-2">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-          >
-            {/* <TradingChart /> */}
-            <SymbolOverview
-              symbols={[
-                [
-                  fromTokenData.label,
-                  fromTokenData.symbol === 'WETH' ? 'ETH' : fromTokenData.symbol,
-                ],
-                [toTokenData.label, toTokenData.symbol],
-              ]}
-              dateFormat="MMM dd, yyyy"
-              colorTheme="dark"
-              chartType="area"
-              locale="en"
-              scaleMode="Percentage"
-              height={700}
-              width={'100%'}
-            />
-          </motion.div>
-        </div>
+        <TokenChart {...{ fromTokenData, toTokenData }} />
       </div>
     </div>
   )
