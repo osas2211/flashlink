@@ -39,7 +39,7 @@ const config = {
   },
   etherscan: {
     apiKey: {
-      'etherlink-testnet': 'aa34141e-00df-4cbb-97e2-97ab5bb8644e',
+      'etherlink-testnet': process.env.ETHERSCAN_API_KEY,
     },
     customChains: [
       {

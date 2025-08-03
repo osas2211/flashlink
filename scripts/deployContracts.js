@@ -17,11 +17,11 @@ async function main() {
   console.log('Using AMM router address:', ammRouterAddress)
 
   // Compile & deploy SwapRouter
-  // const SwapRouter = await ethers.getContractFactory('SwapRouter')
-  // const swapRouter = await SwapRouter.deploy(ammRouterAddress)
-  // await swapRouter.deployed()
+  const SwapRouter = await ethers.getContractFactory('SwapRouter')
+  const swapRouter = await SwapRouter.deploy(ammRouterAddress)
+  await swapRouter.deployed()
 
-  // console.log('SwapRouter deployed to:', swapRouter.address)
+  console.log('SwapRouter deployed to:', swapRouter.address)
 
   const SwapBatcher = await ethers.getContractFactory('SwapBatcher')
   const swapBatcher = await SwapBatcher.deploy(
