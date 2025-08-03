@@ -19,8 +19,8 @@ import { cn } from '@/lib/utils'
 const navigation = [
   { name: 'Home', href: '/', icon: Home },
   { name: 'Swap', href: '/swap', icon: ArrowLeftRight },
-  { name: 'Dashboard', href: '/dashboard', icon: BarChart3 },
-  { name: 'Portfolio', href: '/portfolio', icon: TrendingUp },
+  { name: 'Transactions', href: '/transactions', icon: BarChart3 },
+  { name: 'Feucet', href: '/feucet', icon: TrendingUp },
   { name: 'Settings', href: '/settings', icon: Settings },
 ]
 
@@ -49,7 +49,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
           {!collapsed && (
             <Link href="/" className="flex items-center space-x-2">
               <div className="p-2 bg-gradient-neon rounded-2xl">
-                <Zap className="h-5 w-5 text-black" />
+                <Zap className="h-5 w-5 text-white" />
               </div>
               <span className="text-lg font-bold neon-text">FlashLink</span>
             </Link>
