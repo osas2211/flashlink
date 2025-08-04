@@ -31,7 +31,12 @@ import {
 } from 'thirdweb/react'
 import { client } from '@/lib/thirdweb_utils'
 import { env_vars } from '@/lib/env_vars'
-import { useWalletBalance, useActiveWallet, useActiveAccount } from 'thirdweb/react'
+import {
+  useWalletBalance,
+  useActiveWallet,
+  useActiveAccount,
+  useConnectModal,
+} from 'thirdweb/react'
 import { ethers } from 'ethers'
 import { etherlinkTestnet } from 'thirdweb/chains'
 import { getContract, prepareContractCall, waitForReceipt } from 'thirdweb'
@@ -60,6 +65,7 @@ const batcherContract = getContract({
 
 export default function Swap() {
   const [mevProtection, setMevProtection] = useState(true)
+  const { connect } = useConnectModal()
   const { mutateAsync: sendTx, isPending } = useSendTransaction()
   const { mutateAsync: findBestPath, isLoading: isFindingBestPath } = useFindBestRoute()
   const { mutateAsync: estimateGas, isPending: isEstimatingGas } = useEstimateGas()
@@ -401,7 +407,7 @@ export default function Swap() {
                   </div>
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-foreground-secondary">
-                      Balance: {Number(fromBalance?.displayValue).toFixed(2) || 0}{' '}
+                      Balance: {Number(fromBalance?.displayValue || 0).toFixed(2) || 0}{' '}
                       {fromTokenData.symbol}
                     </span>
                     <div className="flex items-center gap-2">
@@ -484,7 +490,8 @@ export default function Swap() {
                   </div>
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-foreground-secondary">
-                      Balance: {Number(toBalance?.displayValue).toFixed(2)} {toTokenData.symbol}
+                      Balance: {Number(toBalance?.displayValue || 0).toFixed(2)}{' '}
+                      {toTokenData.symbol}
                     </span>
                     <span className="text-foreground-secondary">{}</span>
                   </div>
@@ -510,12 +517,12 @@ export default function Swap() {
                       <span className="text-foreground-secondary">Best Route</span>
                       <span className=" text-xs">{bestRoute.toString().replace(/,/g, ' -> ')}</span>
                     </div>
-                    <div className="flex items-center justify-between">
+                    {/* <div className="flex items-center justify-between">
                       <span className="text-foreground-secondary">Abitrage Opportunity</span>
                       <span className={`${abrOpportunity ? 'text-neon-green' : 'text-neon-pink'}`}>
                         {abrOpportunity ? 'YES' : 'NO'}
                       </span>
-                    </div>
+                    </div> */}
                     <div className="flex items-center justify-between">
                       <span className="text-foreground-secondary">Est. Network Fee</span>
                       <span>~{Number(networkFee || 0).toFixed(6)} XTZ</span>
@@ -529,53 +536,74 @@ export default function Swap() {
               )}
 
               {/* Action Buttons */}
-              <div className="space-y-3">
-                <Button
-                  variant="secondary"
-                  className="w-full h-12"
-                  onClick={() => handleEstimateRoute(fromToken, toToken)}
-                  disabled={
-                    !fromAmount || isEstimatingGas || isFindingBestPath || isPending || isCreatingTX
-                  }
-                >
-                  {isEstimatingGas || isFindingBestPath ? (
-                    <>
-                      <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                      Estimating...
-                    </>
-                  ) : (
-                    <>
-                      <TrendingUp className="mr-2 h-4 w-4" />
-                      Estimate Route
-                    </>
-                  )}
-                </Button>
+              {!account?.address ? (
                 <Button
                   className="w-full h-12 text-lg"
                   onClick={async () => {
-                    if (mevProtection) {
-                      await handleAddToQueue()
-                    } else {
-                      await handleExecuteSwap()
-                    }
+                    connect({ client })
                   }}
-                  disabled={
-                    !toAmount || isPending || isEstimatingGas || isFindingBestPath || isCreatingTX
-                  }
                 >
-                  {isPending || isCreatingTX ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-black mr-2"></div>
-                      Swapping...
-                    </>
-                  ) : (
-                    <>
-                      <Zap className="mr-2 h-4 w-4" />
-                      Execute Swap
-                    </>
-                  )}
+                  Connect wallet
                 </Button>
-              </div>
+              ) : (
+                <>
+                  <div className="space-y-3">
+                    <Button
+                      variant="secondary"
+                      className="w-full h-12"
+                      onClick={() => handleEstimateRoute(fromToken, toToken)}
+                      disabled={
+                        !fromAmount ||
+                        isEstimatingGas ||
+                        isFindingBestPath ||
+                        isPending ||
+                        isCreatingTX
+                      }
+                    >
+                      {isEstimatingGas || isFindingBestPath ? (
+                        <>
+                          <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                          Estimating...
+                        </>
+                      ) : (
+                        <>
+                          <TrendingUp className="mr-2 h-4 w-4" />
+                          Estimate Route
+                        </>
+                      )}
+                    </Button>
+                    <Button
+                      className="w-full h-12 text-lg"
+                      onClick={async () => {
+                        if (mevProtection) {
+                          await handleAddToQueue()
+                        } else {
+                          await handleExecuteSwap()
+                        }
+                      }}
+                      disabled={
+                        !toAmount ||
+                        isPending ||
+                        isEstimatingGas ||
+                        isFindingBestPath ||
+                        isCreatingTX
+                      }
+                    >
+                      {isPending || isCreatingTX ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-black mr-2"></div>
+                          Swapping...
+                        </>
+                      ) : (
+                        <>
+                          <Zap className="mr-2 h-4 w-4" />
+                          Execute Swap
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </>
+              )}
 
               {/* MEV Protection Notice */}
               <div>
