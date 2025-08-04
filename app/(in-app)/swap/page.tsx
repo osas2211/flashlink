@@ -40,6 +40,7 @@ import { generatePaths } from '@/lib/generatePaths'
 import { useFindBestRoute } from '@/hooks/use-find-best-route'
 import { Switch } from '@/components/ui/switch'
 import { TokenChart } from './TokenChart'
+import Link from 'next/link'
 
 const getTokenData = (tokenValue: string) =>
   tokenOptionsTestnet.find(token => token.address === tokenValue) || tokenOptionsTestnet[0]
@@ -175,7 +176,7 @@ export default function Swap() {
       await waitForReceipt(txApprove)
       console.log('Spend Approved')
 
-      await sendTx(doSwap)
+      const tx = await sendTx(doSwap)
       setFromAmount('')
       setToAmount('')
       toast({
@@ -183,6 +184,16 @@ export default function Swap() {
         description: `Swapped ${Number(fromAmount).toFixed(3)} ${
           getTokenData(fromToken).symbol
         } for ${Number(toAmount).toFixed(3)} ${getTokenData(toToken).symbol}`,
+        action: (
+          <Button>
+            <Link
+              target="_blank"
+              href={`https://testnet.explorer.etherlink.com/tx/${tx.transactionHash}`}
+            >
+              View on explorer
+            </Link>
+          </Button>
+        ),
       })
     } catch (error: any) {
       console.log(error)
@@ -215,7 +226,7 @@ export default function Swap() {
       await waitForReceipt(txApprove)
       console.log('Spend Approved')
 
-      await sendTx(doSwap)
+      const tx = await sendTx(doSwap)
       setFromAmount('')
       setToAmount('')
       toast({
@@ -223,6 +234,16 @@ export default function Swap() {
         description: `Swapped ${Number(fromAmount).toFixed(3)} ${
           getTokenData(fromToken).symbol
         } for ${Number(toAmount).toFixed(3)} ${getTokenData(toToken).symbol}`,
+        action: (
+          <Button>
+            <Link
+              target="_blank"
+              href={`https://testnet.explorer.etherlink.com/tx/${tx.transactionHash}`}
+            >
+              View on explorer
+            </Link>
+          </Button>
+        ),
       })
     } catch (error: any) {
       console.log(error)
@@ -361,7 +382,6 @@ export default function Swap() {
                       {fromTokenData.symbol}
                     </span>
                     <div className="flex items-center gap-2">
-                      <span className="text-foreground-secondary">{0}</span>
                       <Button
                         variant="ghost"
                         size="sm"

@@ -20,7 +20,7 @@ const navigation = [
   { name: 'Home', href: '/', icon: Home },
   { name: 'Swap', href: '/swap', icon: ArrowLeftRight },
   { name: 'Transactions', href: '/transactions', icon: BarChart3 },
-  { name: 'Feucet', href: '/feucet', icon: TrendingUp },
+  { name: 'Faucet', href: '/faucet', icon: TrendingUp },
   { name: 'Settings', href: '/settings', icon: Settings },
 ]
 
