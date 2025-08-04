@@ -185,8 +185,8 @@ export default function Swap() {
       await createTX({
         userAddress: account?.address!,
         txHash: tx.transactionHash,
-        amountSwapped: Number(fromAmount).toFixed(3),
-        amountReceived: Number(toAmount).toFixed(3),
+        amountSwapped: Number(fromAmount).toFixed(2),
+        amountReceived: Number(toAmount).toFixed(2),
         fromToken: getTokenData(fromToken).symbol,
         toToken: getTokenData(toToken).symbol,
         status: 'completed',
@@ -195,9 +195,9 @@ export default function Swap() {
       setToAmount('')
       toast({
         title: 'Swap Successful! 🎉',
-        description: `Swapped ${Number(fromAmount).toFixed(3)} ${
+        description: `Swapped ${Number(fromAmount).toFixed(2)} ${
           getTokenData(fromToken).symbol
-        } for ${Number(toAmount).toFixed(3)} ${getTokenData(toToken).symbol}`,
+        } for ${Number(toAmount).toFixed(2)} ${getTokenData(toToken).symbol}`,
         action: (
           <Button>
             <Link
