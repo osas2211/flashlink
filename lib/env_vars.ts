@@ -9,5 +9,5 @@ export const env_vars = {
     process.env.SWAP_ROUTER_ADDRESS || process.env.NEXT_PUBLIC_SWAP_ROUTER_ADDRESS!,
   SWAP_BATCHER_ADDRESS:
     process.env.SWAP_BATCHER_ADDRESS || process.env.NEXT_PUBLIC_SWAP_BATCHER_ADDRESS!,
-  CHAIN_ID: process.env.CHAIN_ID || process.env.NEXT_PUBLIC_CHAIN_ID!,
+  CHAIN_ID: Number(process.env.CHAIN_ID || process.env.NEXT_PUBLIC_CHAIN_ID!),
 }

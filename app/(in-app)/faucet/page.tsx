@@ -16,12 +16,14 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { useToast } from '@/hooks/use-toast'
-import { tokenOptionsTestnet } from '@/constants/token_addresses'
+import { tokenAddresses, tokenOptionsTestnet } from '@/constants/token_addresses'
 import { useConnectModal, useActiveAccount } from 'thirdweb/react'
 import { client } from '@/lib/thirdweb_utils'
+import axios from 'axios'
 
 export default function TokenFaucet() {
   const { connect, isConnecting } = useConnectModal()
+
   const account = useActiveAccount()
   const [selectedToken, setSelectedToken] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -31,43 +33,55 @@ export default function TokenFaucet() {
   const { toast } = useToast()
 
   const handleClaim = async () => {
-    if (!account?.address) {
-      await connect({ client: client })
-      return
-    }
-    if (!selectedToken) {
-      toast({
-        title: 'Missing Information',
-        description: 'Please select a token',
-        variant: 'destructive',
+    try {
+      if (!account?.address) {
+        await connect({ client: client })
+        return
+      }
+      if (!selectedToken) {
+        toast({
+          title: 'Missing Information',
+          description: 'Please select a token',
+          variant: 'destructive',
+        })
+        return
+      }
+
+      setIsLoading(true)
+
+      const token = tokenOptionsTestnet.find(t => t.address === selectedToken)
+
+      const res = await axios.post('/api/send-tokens', {
+        to: account?.address!,
+        contract_address: token?.address!,
       })
-      return
+      console.log(res)
+
+      setRecentClaims(prev => [
+        {
+          token: token?.symbol!,
+          amount: '1000',
+          txHash: '',
+        },
+        ...prev.slice(0, 4),
+      ])
+
+      toast({
+        title: 'Tokens Claimed Successfully!',
+        description: `${1000} ${selectedToken} has been sent to your wallet.`,
+      })
+
+      setIsLoading(false)
+      setSelectedToken('')
+    } catch (error: any) {
+      setIsLoading(false)
+      console.log(error)
+      toast({
+        variant: 'destructive',
+        title: 'Claiming Failed',
+        description: error?.data?.message || error?.message,
+      })
     }
-
-    setIsLoading(true)
-
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000))
-
-    const token = tokenOptionsTestnet.find(t => t.symbol === selectedToken)
-    const mockTxHash = `0x${Math.random().toString(16).substr(2, 64)}`
-
-    setRecentClaims(prev => [
-      {
-        token: selectedToken,
-        amount: 0 || '0',
-        txHash: mockTxHash,
-      },
-      ...prev.slice(0, 4),
-    ])
-
-    toast({
-      title: 'Tokens Claimed Successfully!',
-      description: `${0} ${selectedToken} has been sent to your wallet.`,
-    })
-
-    setIsLoading(false)
-    setSelectedToken('')
   }
 
   const copyToClipboard = (text: string) => {
@@ -114,7 +128,7 @@ export default function TokenFaucet() {
                   </SelectTrigger>
                   <SelectContent>
                     {tokenOptionsTestnet.map(token => (
-                      <SelectItem key={token.symbol} value={token.symbol}>
+                      <SelectItem key={token.address} value={token.address}>
                         <div className="flex items-center gap-3">
                           <img src={token.icon} className="h-8 w-8" />
                           <div>
@@ -189,8 +203,8 @@ export default function TokenFaucet() {
                             <div className="text-sm text-muted-foreground">{token.label}</div>
                           </div>
                         </div>
-                        <Badge variant="outline" className="font-mono">
-                          {0}
+                        <Badge variant="secondary" className="font-mono text-xs">
+                          Available
                         </Badge>
                       </div>
                       {index < tokenOptionsTestnet.length - 1 && <Separator className="mt-3" />}
