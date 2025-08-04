@@ -15,9 +15,7 @@ export type TxRecord = {
 
 // 1) Fetcher fn
 const fetchTransactions = async (userAddress?: string): Promise<TxRecord[]> => {
-  const url = userAddress
-    ? `/api/transactions?userAddress=${encodeURIComponent(userAddress)}`
-    : '/api/transactions'
+  const url = `/api/transactions?userAddress=${userAddress!}`
   const { data } = await axios.get<{ transactions: TxRecord[] }>(url)
   return data.transactions
 }

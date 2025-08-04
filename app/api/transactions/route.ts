@@ -76,15 +76,14 @@ export async function POST(request: Request) {
 }
 
 export async function GET(request: Request) {
-  const url = new URL(request.url)
-  const userAddress = url.searchParams.get('userAddress')
+  const userAddress = request.url.split('userAddress=')[1]
 
   try {
     const client = await clientPromise
     const db = client.db()
     const collection = db.collection<TxRecord>('transactions')
 
-    const filter = userAddress ? { userAddress: userAddress.toLowerCase() } : {}
+    const filter = userAddress ? { userAddress: userAddress } : {}
 
     const records = await collection.find(filter).sort({ createdAt: -1 }).toArray()
 

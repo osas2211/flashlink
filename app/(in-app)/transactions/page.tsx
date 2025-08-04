@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ArrowUpDown, ExternalLink, Copy, Filter } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
@@ -22,27 +22,21 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { useToast } from '@/hooks/use-toast'
-
-type Transaction = {
-  id: string
-  createdAt: string
-  txHash: string
-  amountSwapped: string
-  amountReceived: string
-  fromToken: string
-  toToken: string
-  status: 'completed' | 'pending' | 'failed'
-}
+import { useActiveAccount } from 'thirdweb/react'
+import { TxRecord, useTransactions } from '@/hooks/use-transactions'
+import Link from 'next/link'
 
 export default function TransactionsPage() {
-  const [transactions, setTransactions] = useState<Transaction[]>([])
-  const [sortField, setSortField] = useState<keyof Transaction>('createdAt')
+  const account = useActiveAccount()
+  const { data } = useTransactions(account?.address)
+  const [transactions, setTransactions] = useState<TxRecord[]>([])
+  const [sortField, setSortField] = useState<keyof TxRecord>('createdAt')
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [searchTerm, setSearchTerm] = useState('')
   const { toast } = useToast()
 
-  const handleSort = (field: keyof Transaction) => {
+  const handleSort = (field: keyof TxRecord) => {
     if (field === sortField) {
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
     } else {
@@ -59,7 +53,7 @@ export default function TransactionsPage() {
     })
   }
 
-  const getStatusBadge = (status: Transaction['status']) => {
+  const getStatusBadge = (status: TxRecord['status']) => {
     switch (status) {
       case 'completed':
         return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Completed</Badge>
@@ -71,6 +65,12 @@ export default function TransactionsPage() {
         return <Badge variant="secondary">{status}</Badge>
     }
   }
+
+  useEffect(() => {
+    if (data) {
+      setTransactions(data)
+    }
+  })
 
   const filteredAndSortedTransactions = transactions
     .filter(tx => {
@@ -171,7 +171,7 @@ export default function TransactionsPage() {
                 </TableHeader>
                 <TableBody>
                   {filteredAndSortedTransactions.map(transaction => (
-                    <TableRow key={transaction.id}>
+                    <TableRow key={transaction.txHash}>
                       <TableCell className="font-medium">
                         <div className="text-sm">
                           {new Date(transaction.createdAt).toLocaleDateString()}
@@ -182,9 +182,14 @@ export default function TransactionsPage() {
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
-                          <code className="text-xs bg-muted px-2 py-1 rounded font-mono">
-                            {transaction.txHash.slice(0, 10)}...{transaction.txHash.slice(-8)}
-                          </code>
+                          <Link
+                            href={`https://testnet.explorer.etherlink.com/tx/${transaction.txHash}`}
+                            target="_blank"
+                          >
+                            <code className="text-xs bg-muted px-2 py-1 rounded font-mono">
+                              {transaction.txHash.slice(0, 10)}...{transaction.txHash.slice(-8)}
+                            </code>
+                          </Link>
                           <Button
                             variant="ghost"
                             size="sm"

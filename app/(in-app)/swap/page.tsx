@@ -31,7 +31,7 @@ import {
 } from 'thirdweb/react'
 import { client } from '@/lib/thirdweb_utils'
 import { env_vars } from '@/lib/env_vars'
-import { useWalletBalance, useActiveWallet } from 'thirdweb/react'
+import { useWalletBalance, useActiveWallet, useActiveAccount } from 'thirdweb/react'
 import { ethers } from 'ethers'
 import { etherlinkTestnet } from 'thirdweb/chains'
 import { getContract, prepareContractCall, waitForReceipt } from 'thirdweb'
@@ -41,6 +41,7 @@ import { useFindBestRoute } from '@/hooks/use-find-best-route'
 import { Switch } from '@/components/ui/switch'
 import { TokenChart } from './TokenChart'
 import Link from 'next/link'
+import { useCreateTransaction } from '@/hooks/use-transactions'
 
 const getTokenData = (tokenValue: string) =>
   tokenOptionsTestnet.find(token => token.address === tokenValue) || tokenOptionsTestnet[0]
@@ -82,6 +83,8 @@ export default function Swap() {
   })
 
   const wallet = useActiveWallet()
+  const account = useActiveAccount()
+
   const { data: fromBalance } = useWalletBalance({
     chain: { rpc: env_vars.RPC_URL, id: 128123 },
     tokenAddress: getTokenData(fromToken)?.address,
@@ -95,6 +98,8 @@ export default function Swap() {
     address: wallet?.getAccount()?.address,
     client,
   })
+
+  const { mutateAsync: createTX, isLoading: isCreatingTX } = useCreateTransaction()
 
   const handleSwapTokens = async () => {
     const tempToken1 = fromToken
@@ -177,6 +182,15 @@ export default function Swap() {
       console.log('Spend Approved')
 
       const tx = await sendTx(doSwap)
+      await createTX({
+        userAddress: account?.address!,
+        txHash: tx.transactionHash,
+        amountSwapped: Number(fromAmount).toFixed(3),
+        amountReceived: Number(toAmount).toFixed(3),
+        fromToken: getTokenData(fromToken).symbol,
+        toToken: getTokenData(toToken).symbol,
+        status: 'completed',
+      })
       setFromAmount('')
       setToAmount('')
       toast({
@@ -227,13 +241,22 @@ export default function Swap() {
       console.log('Spend Approved')
 
       const tx = await sendTx(doSwap)
+      await createTX({
+        userAddress: account?.address!,
+        txHash: tx.transactionHash,
+        amountSwapped: Number(fromAmount).toFixed(2),
+        amountReceived: Number(toAmount).toFixed(2),
+        fromToken: getTokenData(fromToken).symbol,
+        toToken: getTokenData(toToken).symbol,
+        status: 'completed',
+      })
       setFromAmount('')
       setToAmount('')
       toast({
         title: 'Order queued with MEV Protection! 🎉',
-        description: `Swapped ${Number(fromAmount).toFixed(3)} ${
+        description: `Swapped ${Number(fromAmount).toFixed(2)} ${
           getTokenData(fromToken).symbol
-        } for ${Number(toAmount).toFixed(3)} ${getTokenData(toToken).symbol}`,
+        } for ${Number(toAmount).toFixed(2)} ${getTokenData(toToken).symbol}`,
         action: (
           <Button>
             <Link
@@ -511,7 +534,9 @@ export default function Swap() {
                   variant="secondary"
                   className="w-full h-12"
                   onClick={() => handleEstimateRoute(fromToken, toToken)}
-                  disabled={!fromAmount || isEstimatingGas || isFindingBestPath || isPending}
+                  disabled={
+                    !fromAmount || isEstimatingGas || isFindingBestPath || isPending || isCreatingTX
+                  }
                 >
                   {isEstimatingGas || isFindingBestPath ? (
                     <>
@@ -534,9 +559,11 @@ export default function Swap() {
                       await handleExecuteSwap()
                     }
                   }}
-                  disabled={!toAmount || isPending || isEstimatingGas || isFindingBestPath}
+                  disabled={
+                    !toAmount || isPending || isEstimatingGas || isFindingBestPath || isCreatingTX
+                  }
                 >
-                  {isPending ? (
+                  {isPending || isCreatingTX ? (
                     <>
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-black mr-2"></div>
                       Swapping...
