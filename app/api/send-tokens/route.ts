@@ -1,9 +1,17 @@
-// app/api/send-token/route.ts
+export const runtime = 'nodejs'
+
+// Polyfill global fetch with node-fetch (no invalid referrer)
+import fetch from 'node-fetch'
+;(globalThis as any).fetch = fetch
+
 import { NextResponse } from 'next/server'
 import { ethers } from 'ethers'
+import { providers } from 'ethers'
 import { env_vars } from '@/lib/env_vars'
+import dotenv from 'dotenv'
+dotenv.config()
 
-const provider = new ethers.providers.JsonRpcProvider(env_vars.RPC_URL)
+const provider = new providers.JsonRpcProvider(env_vars.RPC_URL)
 const wallet = new ethers.Wallet(process.env.PRIVATE_KEY as string, provider)
 const tokenAbi = ['function transfer(address to, uint256 amount) external returns (bool)']
 

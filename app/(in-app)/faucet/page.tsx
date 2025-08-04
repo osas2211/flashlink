@@ -20,6 +20,7 @@ import { tokenAddresses, tokenOptionsTestnet } from '@/constants/token_addresses
 import { useConnectModal, useActiveAccount } from 'thirdweb/react'
 import { client } from '@/lib/thirdweb_utils'
 import axios from 'axios'
+import Link from 'next/link'
 
 export default function TokenFaucet() {
   const { connect, isConnecting } = useConnectModal()
@@ -51,17 +52,23 @@ export default function TokenFaucet() {
 
       const token = tokenOptionsTestnet.find(t => t.address === selectedToken)
 
-      const res = await axios.post('/api/send-tokens', {
+      const res: {
+        data: {
+          message: string
+          txHash: string
+          blockNumber: string
+        }
+      } = await axios.post('/api/send-tokens', {
         to: account?.address!,
         contract_address: token?.address!,
       })
-      console.log(res)
+      console.log(res.data)
 
       setRecentClaims(prev => [
         {
           token: token?.symbol!,
           amount: '1000',
-          txHash: '',
+          txHash: res?.data?.txHash,
         },
         ...prev.slice(0, 4),
       ])
@@ -246,7 +253,13 @@ export default function TokenFaucet() {
                           </div>
                         </div>
                         <div className="text-xs text-muted-foreground font-mono mt-1">
-                          {claim.txHash.slice(0, 10)}...{claim.txHash.slice(-8)}
+                          <Link
+                            href={`https://testnet.explorer.etherlink.com/tx/${claim.txHash}`}
+                            target="_blank"
+                            className="underline"
+                          >
+                            {claim.txHash.slice(0, 10)}...{claim.txHash.slice(-8)}
+                          </Link>
                         </div>
                         {index < recentClaims.length - 1 && <Separator className="mt-3" />}
                       </div>
